@@ -1,0 +1,55 @@
+import express from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+import compression from 'compression';
+import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
+
+import env from './config/env.js';
+import connectDB from './config/db.js';
+import { errorHandler } from './middleware/errorHandler.js';
+
+// ── Route imports ──
+import authRoutes from './routes/auth.routes.js';
+
+// ── Initialise Express ──
+const app = express();
+
+// ── Global Middleware ──
+app.use(helmet());
+app.use(
+  cors({
+    origin: env.CORS_ORIGIN,
+    credentials: true,
+  })
+);
+app.use(compression());
+app.use(morgan('dev'));
+app.use(express.json({ limit: '10mb' }));
+app.use(cookieParser());
+
+// ── Health check ──
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// ── API Routes ──
+app.use('/api/v1/auth', authRoutes);
+
+// ── Global Error Handler (must be last) ──
+app.use(errorHandler);
+
+// ── Start Server ──
+async function start() {
+  await connectDB();
+
+  app.listen(env.PORT, () => {
+    console.log(`\n🚀 Forti Dashboard API running on port ${env.PORT}`);
+    console.log(`   Environment: ${env.NODE_ENV}`);
+    console.log(`   CORS origin: ${env.CORS_ORIGIN}\n`);
+  });
+}
+
+start();
+
+export default app;

@@ -1,0 +1,18 @@
+{
+  "name": "forti-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Forti Foods Internal Executive Dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently -n server,client -c blue,green \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "dev:server": "npm run dev --prefix server",
+    "dev:client": "npm run dev --prefix client",
+    "seed": "npm run seed --prefix server",
+    "build:client": "npm run build --prefix client",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
