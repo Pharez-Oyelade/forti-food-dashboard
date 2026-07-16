@@ -20,6 +20,7 @@ import grantRoutes from './routes/grant.routes.js';
 
 // ── Initialise Express ──
 const app = express();
+app.set('trust proxy', 1);
 
 // ── Global Middleware ──
 app.use(helmet());
