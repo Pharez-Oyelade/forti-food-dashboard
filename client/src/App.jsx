@@ -20,6 +20,8 @@ import ForbiddenPage from "@/pages/ForbiddenPage";
 import SalesPipelinePage from "@/pages/sales/SalesPipelinePage";
 import InventoryPage from "@/pages/inventory/InventoryPage";
 import WeeklyReportPage from "@/pages/reports/WeeklyReportPage";
+import BDDashboardPage from "@/pages/bd/BDDashboardPage";
+import GrantsPipelinePage from "@/pages/bd/GrantsPipelinePage";
 import { SECTIONS } from "../../shared/constants.js";
 
 /* ── Placeholder pages for future phases ── */
@@ -81,6 +83,24 @@ function AppRoutes() {
           element={
             <ProtectedRoute section={SECTIONS.PIPELINE}>
               <SalesPipelinePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="bd"
+          element={
+            <ProtectedRoute section={SECTIONS.PIPELINE}>
+              <BDDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="bd/grants"
+          element={
+            <ProtectedRoute section={SECTIONS.PIPELINE} minLevel="edit">
+              <GrantsPipelinePage />
             </ProtectedRoute>
           }
         />

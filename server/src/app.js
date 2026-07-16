@@ -15,6 +15,8 @@ import dealRoutes from './routes/deal.routes.js';
 import productRoutes from './routes/product.routes.js';
 import reportRoutes from './routes/report.routes.js';
 import bdMetricsRoutes from './routes/bd-metrics.routes.js';
+import activityRoutes from './routes/activity.routes.js';
+import grantRoutes from './routes/grant.routes.js';
 
 // ── Initialise Express ──
 const app = express();
@@ -43,6 +45,8 @@ app.use('/api/v1/deals', dealRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/metrics', bdMetricsRoutes);
+app.use('/api/v1/activities', activityRoutes);
+app.use('/api/v1/grants', grantRoutes);
 
 // ── Global Error Handler (must be last) ──
 app.use(errorHandler);

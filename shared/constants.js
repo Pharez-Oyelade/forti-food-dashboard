@@ -62,6 +62,48 @@ export const RAG_STATUS = {
   GREEN: 'Green',
 };
 
+// ── BD Activity Types ──
+export const ACTIVITY_TYPES = {
+  CALL: 'Call',
+  EMAIL: 'Email',
+  MEETING: 'Meeting',
+  FOLLOW_UP: 'Follow-up',
+  PROPOSAL_SENT: 'Proposal Sent',
+  SITE_VISIT: 'Site Visit',
+  OTHER: 'Other',
+};
+
+// ── BD Activity Outcomes ──
+export const ACTIVITY_OUTCOMES = {
+  POSITIVE: 'Positive',
+  NEUTRAL: 'Neutral',
+  NEGATIVE: 'Negative',
+  NO_RESPONSE: 'No Response',
+  PENDING: 'Pending',
+};
+
+// ── Grant Types ──
+export const GRANT_TYPES = {
+  ACCELERATOR: 'Accelerator',
+  GRANT: 'Grant',
+  COMPETITION: 'Competition',
+  FELLOWSHIP: 'Fellowship',
+  AWARD: 'Award',
+  MENTORSHIP: 'Mentorship',
+  OTHER: 'Other',
+};
+
+// ── Grant Statuses ──
+export const GRANT_STATUSES = {
+  RESEARCHING: 'Researching',
+  NOT_YET_ELIGIBLE: 'Not Yet Eligible',
+  IN_PROGRESS: 'In Progress',
+  SUBMITTED: 'Submitted',
+  ACCEPTED: 'Accepted',
+  REJECTED: 'Rejected',
+  WAITLISTED: 'Waitlisted',
+};
+
 // ── School Statuses ──
 export const SCHOOL_STATUS = {
   IDENTIFIED: 'Identified',
