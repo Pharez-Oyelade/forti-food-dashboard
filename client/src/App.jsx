@@ -17,6 +17,9 @@ import LoginPage from "@/pages/auth/LoginPage";
 import DashboardHome from "@/pages/dashboard/DashboardHome";
 import NotFoundPage from "@/pages/NotFoundPage";
 import ForbiddenPage from "@/pages/ForbiddenPage";
+import SalesPipelinePage from "@/pages/sales/SalesPipelinePage";
+import InventoryPage from "@/pages/inventory/InventoryPage";
+import WeeklyReportPage from "@/pages/reports/WeeklyReportPage";
 import { SECTIONS } from "../../shared/constants.js";
 
 /* ── Placeholder pages for future phases ── */
@@ -62,16 +65,13 @@ function AppRoutes() {
       >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<DashboardHome />} />
+        <Route path="reports/weekly" element={<WeeklyReportPage />} />
 
         <Route
           path="inventory"
           element={
             <ProtectedRoute section={SECTIONS.INVENTORY}>
-              <PlaceholderPage
-                icon={Package}
-                title="Inventory Management"
-                phase="Phase 2"
-              />
+              <InventoryPage />
             </ProtectedRoute>
           }
         />
@@ -80,11 +80,7 @@ function AppRoutes() {
           path="sales"
           element={
             <ProtectedRoute section={SECTIONS.PIPELINE}>
-              <PlaceholderPage
-                icon={TrendingUp}
-                title="Sales Pipeline"
-                phase="Phase 3"
-              />
+              <SalesPipelinePage />
             </ProtectedRoute>
           }
         />

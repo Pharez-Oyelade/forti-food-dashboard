@@ -10,6 +10,7 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  FileText
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SECTIONS } from "../../../../shared/constants.js";
@@ -23,6 +24,12 @@ const NAV_GROUPS = [
         icon: LayoutDashboard,
         label: "Dashboard",
         section: null,
+      },
+      {
+        to: "/app/reports/weekly",
+        icon: FileText,
+        label: "Weekly Report",
+        section: null, // Accessible by all authenticated users
       },
     ],
   },
