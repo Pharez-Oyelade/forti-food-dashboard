@@ -15,7 +15,7 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       // Don't redirect if already on login-related endpoints
       const isAuthRequest = error.config?.url?.includes('/auth/');
-      if (!isAuthRequest || error.config?.url?.includes('/auth/me')) {
+      if (!isAuthRequest) {
         window.location.href = '/login';
       }
     }

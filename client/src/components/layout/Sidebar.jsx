@@ -10,6 +10,9 @@ import {
   Users,
   ChevronLeft,
   ChevronRight,
+  FileText,
+  Activity,
+  Award
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SECTIONS } from "../../../../shared/constants.js";
@@ -23,6 +26,12 @@ const NAV_GROUPS = [
         icon: LayoutDashboard,
         label: "Dashboard",
         section: null,
+      },
+      {
+        to: "/app/reports/weekly",
+        icon: FileText,
+        label: "Weekly Report",
+        section: null, // Accessible by all authenticated users
       },
     ],
   },
@@ -39,6 +48,23 @@ const NAV_GROUPS = [
         to: "/app/sales",
         icon: TrendingUp,
         label: "Sales Pipeline",
+        section: SECTIONS.PIPELINE,
+      },
+    ],
+  },
+  {
+    label: "BD TEAM",
+    items: [
+      {
+        to: "/app/bd",
+        icon: Activity,
+        label: "BD Dashboard",
+        section: SECTIONS.PIPELINE,
+      },
+      {
+        to: "/app/bd/grants",
+        icon: Award,
+        label: "Grants Pipeline",
         section: SECTIONS.PIPELINE,
       },
     ],
@@ -115,7 +141,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-5 custom-scrollbar px-3 flex flex-col gap-6">
+      <nav className="flex-1 overflow-y-auto py-5 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] px-3 flex flex-col gap-6">
         {NAV_GROUPS.map((group) => {
           const visibleItems = group.items.filter(
             (item) => !item.section || canRead(item.section),
@@ -134,6 +160,7 @@ export default function Sidebar({ collapsed, onToggle }) {
                   <li key={item.to}>
                     <NavLink
                       to={item.to}
+                      end={true}
                       id={`nav-${item.to.replace(/\//g, "-").slice(1)}`}
                       className={({ isActive }) =>
                         `flex items-center rounded-lg h-10 transition-all ${

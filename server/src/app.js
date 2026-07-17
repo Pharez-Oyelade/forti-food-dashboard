@@ -11,9 +11,16 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 // ── Route imports ──
 import authRoutes from './routes/auth.routes.js';
+import dealRoutes from './routes/deal.routes.js';
+import productRoutes from './routes/product.routes.js';
+import reportRoutes from './routes/report.routes.js';
+import bdMetricsRoutes from './routes/bd-metrics.routes.js';
+import activityRoutes from './routes/activity.routes.js';
+import grantRoutes from './routes/grant.routes.js';
 
 // ── Initialise Express ──
 const app = express();
+app.set('trust proxy', 1);
 
 // ── Global Middleware ──
 app.use(helmet());
@@ -35,6 +42,12 @@ app.get('/api/health', (_req, res) => {
 
 // ── API Routes ──
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/deals', dealRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/metrics', bdMetricsRoutes);
+app.use('/api/v1/activities', activityRoutes);
+app.use('/api/v1/grants', grantRoutes);
 
 // ── Global Error Handler (must be last) ──
 app.use(errorHandler);

@@ -11,6 +11,8 @@ import mongoose from "mongoose";
 import env from "./env.js";
 import Role from "../models/Role.js";
 import User from "../models/User.js";
+import { Deal } from "../models/Deal.js";
+import { Product } from "../models/Product.js";
 import { ACCESS_LEVELS, ROLE_NAMES } from "../../../shared/constants.js";
 import dns from "dns";
 
@@ -145,6 +147,7 @@ async function seed() {
     const adminRole = roleResults[ROLE_NAMES.FOUNDER_ADMIN];
 
     const existingAdmin = await User.findOne({ email: env.ADMIN_EMAIL });
+    let adminUser = existingAdmin;
 
     if (existingAdmin) {
       // Update role association (password stays unchanged)
@@ -154,14 +157,73 @@ async function seed() {
       await existingAdmin.save();
       console.log(`  ✔ Admin updated: ${existingAdmin.email}`);
     } else {
-      const admin = await User.create({
+      adminUser = await User.create({
         name: env.ADMIN_NAME,
         email: env.ADMIN_EMAIL,
         password: env.ADMIN_PASSWORD,
         role: adminRole._id,
         is_active: true,
       });
-      console.log(`  ✔ Admin created: ${admin.email}`);
+      console.log(`  ✔ Admin created: ${adminUser.email}`);
+    }
+
+    // ── Upsert Viewer/Stakeholder user ──
+    console.log("\n[SEED] Upserting viewer user…");
+    const viewerRole = roleResults[ROLE_NAMES.VIEWER_STAKEHOLDER];
+    const viewerEmail = 'viewer@fortifoods.com';
+    const existingViewer = await User.findOne({ email: viewerEmail });
+
+    if (existingViewer) {
+      existingViewer.role = viewerRole._id;
+      existingViewer.name = 'Forti Viewer';
+      existingViewer.is_active = true;
+      await existingViewer.save();
+      console.log(`  ✔ Viewer updated: ${existingViewer.email}`);
+    } else {
+      await User.create({
+        name: 'Forti Viewer',
+        email: viewerEmail,
+        password: 'changeme123',
+        role: viewerRole._id,
+        is_active: true,
+      });
+      console.log(`  ✔ Viewer created: ${viewerEmail}`);
+    }
+
+    // ── Seed Products ──
+    const productCount = await mongoose.model('Product').countDocuments();
+    if (productCount === 0) {
+      console.log("\n[SEED] Seeding Products…");
+      const products = [
+        { product_name: 'Forti-Flakes (500g)', sku: 'FF-500', unit_cost: 450, unit_price: 800, units_on_hand: 1200, units_sold_to_date: 5000, category: 'Cereals', reorder_point: 200 },
+        { product_name: 'Forti-Flakes (1kg)', sku: 'FF-1000', unit_cost: 850, unit_price: 1500, units_on_hand: 50, units_sold_to_date: 2000, category: 'Cereals', reorder_point: 100 }, // Slow mover / low stock
+        { product_name: 'Nutri-Porridge (Sachet)', sku: 'NP-50', unit_cost: 50, unit_price: 100, units_on_hand: 15000, units_sold_to_date: 100000, category: 'Porridge', reorder_point: 5000 },
+        { product_name: 'Nutri-Porridge (Family Pack)', sku: 'NP-2000', unit_cost: 1600, unit_price: 2500, units_on_hand: 0, units_sold_to_date: 300, category: 'Porridge', reorder_point: 50 }, // Depleted
+      ];
+      for (const p of products) {
+        await mongoose.model('Product').create(p);
+      }
+      console.log(`  ✔ Created ${products.length} products`);
+    } else {
+      console.log(`\n[SEED] Products already exist (${productCount}). Skipping product seed.`);
+    }
+
+    // ── Seed Deals ──
+    const dealCount = await mongoose.model('Deal').countDocuments();
+    if (dealCount === 0) {
+      console.log("\n[SEED] Seeding Deals…");
+      const deals = [
+        { deal_name: 'Q3 School Feeding Program', company: 'Lagos State Gov', deal_stage: 'Negotiation', value_naira: 15000000, probability_pct: 80, rag_status: 'Green', assigned_to: adminUser._id },
+        { deal_name: 'NGO Relief Supply - Borno', company: 'Save the Children', deal_stage: 'Proposal', value_naira: 8500000, probability_pct: 50, rag_status: 'Amber', assigned_to: adminUser._id },
+        { deal_name: 'Corporate CSR Package', company: 'Access Bank', deal_stage: 'Qualification', value_naira: 2000000, probability_pct: 20, rag_status: 'Red', assigned_to: adminUser._id },
+        { deal_name: 'Military Ration Pilot', company: 'Nigerian Army', deal_stage: 'Prospecting', value_naira: 45000000, probability_pct: 10, rag_status: 'Amber', assigned_to: adminUser._id },
+      ];
+      for (const d of deals) {
+        await mongoose.model('Deal').create(d);
+      }
+      console.log(`  ✔ Created ${deals.length} deals`);
+    } else {
+      console.log(`\n[SEED] Deals already exist (${dealCount}). Skipping deal seed.`);
     }
 
     console.log("\n[SEED] 🎉 Seeding complete!");

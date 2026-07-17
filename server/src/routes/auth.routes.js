@@ -10,10 +10,13 @@ const router = Router();
 
 /** Cookie options shared between login/logout */
 function cookieOptions() {
+  const isCrossDomain = env.CORS_ORIGIN && !env.CORS_ORIGIN.includes('localhost');
+  const forceSecure = env.NODE_ENV === 'production' || isCrossDomain;
+  
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: forceSecure,
+    sameSite: forceSecure ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   };
 }
