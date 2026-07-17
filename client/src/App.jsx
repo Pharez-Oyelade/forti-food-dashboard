@@ -30,7 +30,7 @@ function PlaceholderPage({ icon, title, phase }) {
     <EmptyState
       icon={icon}
       title={title}
-      description={`This module is coming in ${phase}. Stay tuned!`}
+      description={`Building this module in ${phase}.`}
     />
   );
 }
