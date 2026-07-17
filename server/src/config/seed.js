@@ -13,6 +13,8 @@ import Role from "../models/Role.js";
 import User from "../models/User.js";
 import { Deal } from "../models/Deal.js";
 import { Product } from "../models/Product.js";
+import { Activity } from "../models/Activity.js";
+import { Grant } from "../models/Grant.js";
 import { ACCESS_LEVELS, ROLE_NAMES } from "../../../shared/constants.js";
 import dns from "dns";
 
@@ -224,6 +226,78 @@ async function seed() {
       console.log(`  ✔ Created ${deals.length} deals`);
     } else {
       console.log(`\n[SEED] Deals already exist (${dealCount}). Skipping deal seed.`);
+    }
+
+    // ── Upsert BD Lead user (Emmanuella) ──
+    console.log("\n[SEED] Upserting BD Lead user…");
+    const bdRole = roleResults[ROLE_NAMES.SALES_BD_LEAD];
+    const bdEmail = 'bd@fortifoods.com';
+    let bdUser = await User.findOne({ email: bdEmail });
+
+    if (bdUser) {
+      bdUser.role = bdRole._id;
+      bdUser.name = 'Emmanuella';
+      bdUser.is_active = true;
+      await bdUser.save();
+      console.log(`  ✔ BD Lead updated: ${bdUser.email}`);
+    } else {
+      bdUser = await User.create({
+        name: 'Emmanuella',
+        email: bdEmail,
+        password: 'changeme123',
+        role: bdRole._id,
+        is_active: true,
+      });
+      console.log(`  ✔ BD Lead created: ${bdEmail}`);
+    }
+
+    // ── Seed Grants ──
+    const grantCount = await Grant.countDocuments();
+    if (grantCount === 0) {
+      console.log("\n[SEED] Seeding Grants…");
+      const grants = [
+        { program_name: '100+ impact accelerator', funder_organisation: 'Carter Women\'s Initiative', type: 'Accelerator', status: 'Submitted', award_amount: 150000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'D-Prize Challenge', funder_organisation: 'D-Prize', type: 'Competition', status: 'Submitted', award_amount: 20000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'DRK Foundation', funder_organisation: 'DRK Foundation', type: 'Grant', status: 'Submitted', award_amount: 300000, currency: 'USD', is_rolling: true, assigned_to: bdUser._id },
+        { program_name: 'Amber Grants for Women', funder_organisation: 'WomensNet', type: 'Grant', status: 'In Progress', award_amount: 15000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'Sustainability Open Innovation Challenge', funder_organisation: 'Enterprise Singapore', type: 'Competition', status: 'In Progress', award_amount: 100000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'She Ascends Women Accelerator', funder_organisation: 'She Ascends', type: 'Accelerator', status: 'In Progress', award_amount: 65000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'Horizon Europe Green Transition', funder_organisation: 'EU', type: 'Grant', status: 'Submitted', award_amount: 5000000, currency: 'EUR', assigned_to: bdUser._id },
+        { program_name: 'Bridge Seed Global Accelerator', funder_organisation: 'Bridge Seed', type: 'Accelerator', status: 'In Progress', award_amount: 5000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'Tony Elumelu Foundation', funder_organisation: 'TEF', type: 'Grant', status: 'In Progress', award_amount: 5000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'KPMG Female Founders in Africa', funder_organisation: 'KPMG', type: 'Competition', status: 'Submitted', award_amount: 1000000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'Cartier Women\'s Initiative', funder_organisation: 'Cartier', type: 'Award', status: 'Researching', award_amount: 100000, currency: 'USD', assigned_to: bdUser._id },
+        { program_name: 'Mulago Foundation Fellows', funder_organisation: 'Mulago Foundation', type: 'Fellowship', status: 'Researching', award_amount: 100000, currency: 'USD', assigned_to: bdUser._id },
+      ];
+      for (const g of grants) {
+        await Grant.create(g);
+      }
+      console.log(`  ✔ Created ${grants.length} grants`);
+    } else {
+      console.log(`\n[SEED] Grants already exist (${grantCount}). Skipping grant seed.`);
+    }
+
+    // ── Seed Activities ──
+    const activityCount = await Activity.countDocuments();
+    if (activityCount === 0) {
+      console.log("\n[SEED] Seeding Activities…");
+      const deal1 = await Deal.findOne({ deal_name: 'Q3 School Feeding Program' });
+      const deal2 = await Deal.findOne({ deal_name: 'NGO Relief Supply - Borno' });
+      const grant1 = await Grant.findOne({ program_name: '100+ impact accelerator' });
+
+      const activities = [
+        { activity_type: 'Meeting', subject: 'Initial Alignment Meeting', contact_name: 'Gov Rep', logged_by: adminUser._id, deal: deal1?._id, outcome: 'Positive' },
+        { activity_type: 'Email', subject: 'Sent Proposal Draft', contact_name: 'Procurement Lead', logged_by: adminUser._id, deal: deal2?._id, outcome: 'Pending' },
+        { activity_type: 'Call', subject: 'Accelerator Clarification', contact_name: 'Carter Team', logged_by: bdUser._id, grant: grant1?._id, outcome: 'Positive' },
+        { activity_type: 'Meeting', subject: 'Partnership Kickoff', contact_name: 'Sponsor', logged_by: bdUser._id, outcome: 'Neutral' },
+        { activity_type: 'Call', subject: 'Cold Outreach', contact_name: 'Retail Exec', logged_by: bdUser._id, outcome: 'No Response' },
+      ];
+      for (const a of activities) {
+        await Activity.create(a);
+      }
+      console.log(`  ✔ Created ${activities.length} activities`);
+    } else {
+      console.log(`\n[SEED] Activities already exist (${activityCount}). Skipping activity seed.`);
     }
 
     console.log("\n[SEED] 🎉 Seeding complete!");
