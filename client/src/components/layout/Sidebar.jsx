@@ -12,7 +12,7 @@ import {
   ChevronRight,
   FileText,
   Activity,
-  Award
+  Award,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SECTIONS } from "../../../../shared/constants.js";

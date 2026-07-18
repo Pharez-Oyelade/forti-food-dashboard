@@ -27,3 +27,6 @@ coverage/
 
 task.md
 implementation_plan.md
+
+*.xlsx
+*.docx
