@@ -1,17 +1,24 @@
-import { LogOut } from "lucide-react";
+import { LogOut, Menu } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { StatusBadge } from "@/components/common";
 
-export default function TopBar({ title, collapsed }) {
+export default function TopBar({ title, collapsed, onMobileToggle }) {
   const { user, logout } = useAuth();
 
   return (
     <header
-      className={`fixed top-0 right-0 h-16 bg-[#0e2a2c]/80 backdrop-blur-md border-b border-brand-lime/10 flex items-center justify-between px-6 z-30 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-        collapsed ? "left-[72px]" : "left-[260px]"
+      className={`fixed top-0 right-0 h-16 bg-[#0e2a2c]/80 backdrop-blur-md border-b border-brand-lime/10 flex items-center justify-between px-4 md:px-6 z-30 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] max-md:left-0 ${
+        collapsed ? "md:left-[72px]" : "md:left-[260px]"
       }`}
     >
-      <div className="flex items-center">
+      <div className="flex items-center gap-3">
+        <button 
+          className="md:hidden text-gray-400 hover:text-white"
+          onClick={onMobileToggle}
+          aria-label="Open Menu"
+        >
+          <Menu size={24} />
+        </button>
         <h1 className="text-xl font-bold text-gray-100">{title}</h1>
       </div>
 

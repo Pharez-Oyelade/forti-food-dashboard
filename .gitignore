@@ -30,3 +30,6 @@ implementation_plan.md
 
 *.xlsx
 *.docx
+
+seed.js
+seed_phase3.js

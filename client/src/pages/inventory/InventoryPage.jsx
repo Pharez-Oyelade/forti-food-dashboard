@@ -27,7 +27,6 @@ export default function InventoryPage() {
     units_received: 0,
     shelf_life_months: 12,
     reorder_point: 0,
-    reorder_point: 0,
     expiry_date: "",
   });
 
@@ -76,7 +75,9 @@ export default function InventoryPage() {
         units_received: product.units_received || 0,
         shelf_life_months: product.shelf_life_months || 12,
         reorder_point: product.reorder_point || 0,
-        expiry_date: product.expiry_date ? product.expiry_date.split("T")[0] : "",
+        expiry_date: product.expiry_date
+          ? product.expiry_date.split("T")[0]
+          : "",
       });
     } else {
       setEditingProduct(null);
@@ -165,7 +166,7 @@ export default function InventoryPage() {
           Inventory Management
         </h1>
         {canWrite(SECTIONS.INVENTORY) && (
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <Button variant="secondary" icon={Upload}>
               Import CSV
             </Button>
@@ -202,12 +203,21 @@ export default function InventoryPage() {
         <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-4 mb-6">
           <h3 className="text-red-400 font-semibold mb-2">⚠ PRIORITY ALERTS</h3>
           <ul className="list-disc list-inside text-slate-300 space-y-1 ml-4 text-sm">
-            {products.filter(p => p.status === INVENTORY_STATUS.EXPIRY_RISK || p.units_on_hand > 5000 && p.product_name.includes('Chicken')).map(p => (
-              <li key={p._id}>
-                <strong>SHELF-LIFE RISK — {p.product_name}</strong> ({p.units_on_hand} packs) 
-                expires soon. At the current sales rate it will NOT clear in time — projected spoilage is significant.
-              </li>
-            ))}
+            {products
+              .filter(
+                (p) =>
+                  p.status === INVENTORY_STATUS.EXPIRY_RISK ||
+                  (p.units_on_hand > 5000 &&
+                    p.product_name.includes("Chicken")),
+              )
+              .map((p) => (
+                <li key={p._id}>
+                  <strong>SHELF-LIFE RISK — {p.product_name}</strong> (
+                  {p.units_on_hand} packs) expires soon. At the current sales
+                  rate it will NOT clear in time — projected spoilage is
+                  significant.
+                </li>
+              ))}
           </ul>
         </div>
       )}
@@ -244,8 +254,9 @@ export default function InventoryPage() {
       </div>
 
       {/* Product Table */}
-      <Card title="Product List" className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <Card title="Product List">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 text-sm">
               <th className="p-3">Product Name</th>
@@ -319,12 +330,14 @@ export default function InventoryPage() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       {/* Movement Ledger */}
-      <Card title="Recent Movements Ledger" className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <Card title="Recent Movements Ledger">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 text-sm">
               <th className="p-3">Date</th>
@@ -355,18 +368,27 @@ export default function InventoryPage() {
                     {movement.product?.product_name || "Unknown Product"}
                   </td>
                   <td className="p-3">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${movement.type === 'SALE' ? 'bg-emerald-500/20 text-emerald-400' : movement.type === 'RETURN' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700 text-slate-300'}`}>
+                    <span
+                      className={`px-2 py-1 rounded text-xs font-semibold ${movement.type === "SALE" ? "bg-emerald-500/20 text-emerald-400" : movement.type === "RETURN" ? "bg-amber-500/20 text-amber-400" : "bg-slate-700 text-slate-300"}`}
+                    >
                       {movement.type}
                     </span>
                   </td>
-                  <td className="p-3 text-right text-slate-200">{movement.quantity}</td>
-                  <td className="p-3 text-slate-400">{movement.person || "-"}</td>
-                  <td className="p-3 text-slate-400">{movement.batch_number || "-"}</td>
+                  <td className="p-3 text-right text-slate-200">
+                    {movement.quantity}
+                  </td>
+                  <td className="p-3 text-slate-400">
+                    {movement.person || "-"}
+                  </td>
+                  <td className="p-3 text-slate-400">
+                    {movement.batch_number || "-"}
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       {/* CRUD Modal */}
@@ -572,12 +594,19 @@ export default function InventoryPage() {
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
                     value={movementFormData.product}
                     onChange={(e) =>
-                      setMovementFormData({ ...movementFormData, product: e.target.value })
+                      setMovementFormData({
+                        ...movementFormData,
+                        product: e.target.value,
+                      })
                     }
                   >
-                    <option value="" disabled>Select a product...</option>
+                    <option value="" disabled>
+                      Select a product...
+                    </option>
                     {products.map((p) => (
-                      <option key={p._id} value={p._id}>{p.product_name} ({p.sku})</option>
+                      <option key={p._id} value={p._id}>
+                        {p.product_name} ({p.sku})
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -590,7 +619,10 @@ export default function InventoryPage() {
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
                     value={movementFormData.type}
                     onChange={(e) =>
-                      setMovementFormData({ ...movementFormData, type: e.target.value })
+                      setMovementFormData({
+                        ...movementFormData,
+                        type: e.target.value,
+                      })
                     }
                   >
                     <option value="SALE">SALE</option>
@@ -627,7 +659,10 @@ export default function InventoryPage() {
                     placeholder="e.g. Abuja Rep"
                     value={movementFormData.person}
                     onChange={(e) =>
-                      setMovementFormData({ ...movementFormData, person: e.target.value })
+                      setMovementFormData({
+                        ...movementFormData,
+                        person: e.target.value,
+                      })
                     }
                   />
                 </div>
@@ -640,7 +675,10 @@ export default function InventoryPage() {
                     placeholder="e.g. Batch 2"
                     value={movementFormData.batch_number}
                     onChange={(e) =>
-                      setMovementFormData({ ...movementFormData, batch_number: e.target.value })
+                      setMovementFormData({
+                        ...movementFormData,
+                        batch_number: e.target.value,
+                      })
                     }
                   />
                 </div>
@@ -653,7 +691,10 @@ export default function InventoryPage() {
                     rows="2"
                     value={movementFormData.notes}
                     onChange={(e) =>
-                      setMovementFormData({ ...movementFormData, notes: e.target.value })
+                      setMovementFormData({
+                        ...movementFormData,
+                        notes: e.target.value,
+                      })
                     }
                   />
                 </div>

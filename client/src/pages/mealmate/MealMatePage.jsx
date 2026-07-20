@@ -153,8 +153,9 @@ export default function MealMatePage() {
       </div>
 
       {/* Schools Table */}
-      <Card title="School Priority List" className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <Card title="School Priority List">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 text-sm">
               <th className="p-3">School Name</th>
@@ -217,7 +218,8 @@ export default function MealMatePage() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       {/* CRUD Modal */}

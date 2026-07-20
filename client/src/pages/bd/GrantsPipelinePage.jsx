@@ -99,7 +99,7 @@ export default function GrantsPipelinePage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <div>
           <h1 className="text-2xl font-semibold text-slate-100">Grants & Partnerships Pipeline</h1>
           <p className="text-slate-400 text-sm">Track inbound funding and accelerator opportunities</p>
@@ -121,8 +121,9 @@ export default function GrantsPipelinePage() {
       </div>
 
       {/* Grants Table */}
-      <Card title="All Grants" className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
+      <Card title="All Grants">
+        <div className="overflow-x-auto w-full">
+          <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 text-sm">
               <th className="p-3">Program Name</th>
@@ -165,7 +166,8 @@ export default function GrantsPipelinePage() {
               ))
             )}
           </tbody>
-        </table>
+          </table>
+        </div>
       </Card>
 
       {/* CRUD Modal */}

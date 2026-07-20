@@ -125,8 +125,9 @@ export default function BDDashboardPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Activities Table */}
-        <Card title="Recent Activities" className="lg:col-span-2 overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+        <Card title="Recent Activities" className="lg:col-span-2">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-700 text-slate-400 text-sm">
                 <th className="p-3">Type</th>
@@ -164,7 +165,8 @@ export default function BDDashboardPage() {
                 ))
               )}
             </tbody>
-          </table>
+            </table>
+          </div>
         </Card>
 
         {/* BD Performance Card */}
