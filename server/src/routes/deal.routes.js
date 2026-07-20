@@ -89,6 +89,9 @@ router.post(
       // If user is edit_own, force assignment to self
       if (req.accessLevel === ACCESS_LEVELS.EDIT_OWN) {
         data.assigned_to = req.user._id;
+      } else if (!data.assigned_to) {
+        // Default to creator if not specified
+        data.assigned_to = req.user._id;
       }
       
       const deal = await Deal.create(data);

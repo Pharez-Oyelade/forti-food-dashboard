@@ -1,5 +1,6 @@
 import express from 'express';
 import { Product } from '../models/Product.js';
+import { InventoryMovement } from '../models/InventoryMovement.js';
 import { authenticate } from '../middleware/auth.js';
 import { authorize } from '../middleware/rbac.js';
 import { validate } from '../middleware/validate.js';
@@ -22,6 +23,8 @@ router.get('/summary', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) =
     let total_stock_value = 0;
     let depleted_count = 0;
     let expiry_risks = 0;
+    let total_sell_through = 0;
+    let products_with_sell_through = 0;
     
     products.forEach(p => {
       total_skus++;
@@ -32,6 +35,10 @@ router.get('/summary', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) =
       if (p.status === INVENTORY_STATUS.EXPIRY_RISK) {
         expiry_risks++;
       }
+      if (p.sell_through_rate != null) {
+        total_sell_through += p.sell_through_rate;
+        products_with_sell_through++;
+      }
     });
 
     res.json({
@@ -40,9 +47,55 @@ router.get('/summary', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) =
         total_skus,
         total_stock_value,
         depleted_count,
-        expiry_risks
+        expiry_risks,
+        avg_sell_through: products_with_sell_through > 0 ? total_sell_through / products_with_sell_through : 0
       }
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get Inventory Movements
+router.get('/movements', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) => {
+  try {
+    const movements = await InventoryMovement.find({}).populate('product', 'product_name sku').sort('-date');
+    res.json({ success: true, data: movements });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Create Inventory Movement
+router.post('/movements', authorize(SECTIONS.INVENTORY, ACCESS_LEVELS.EDIT), async (req, res, next) => {
+  try {
+    const movement = await InventoryMovement.create(req.body);
+    // Also update the product stock implicitly
+    const product = await Product.findById(movement.product);
+    if (product) {
+      if (movement.type === 'SALE' || movement.type === 'DEMO' || movement.type === 'MARKETING' || movement.type === 'REGULATORY') {
+        product.units_on_hand -= movement.quantity;
+        if (movement.type === 'SALE') {
+          product.units_sold_to_date += movement.quantity;
+        }
+      } else if (movement.type === 'RETURN') {
+        product.units_on_hand += movement.quantity;
+      }
+      await product.save();
+    }
+    res.status(201).json({ success: true, data: movement });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get Expiry Timeline
+router.get('/expiry-timeline', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) => {
+  try {
+    const products = await Product.find({ expiry_date: { $ne: null } })
+      .sort('expiry_date')
+      .select('product_name sku units_on_hand expiry_date status shelf_life_months sell_through_rate');
+    res.json({ success: true, data: products });
   } catch (error) {
     next(error);
   }
@@ -93,10 +146,12 @@ router.put(
   validate(updateProductSchema),
   async (req, res, next) => {
     try {
-      const product = await Product.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      const product = await Product.findById(req.params.id);
       if (!product) {
         return res.status(404).json({ success: false, message: 'Product not found' });
       }
+      Object.assign(product, req.body);
+      await product.save();
       res.json({ success: true, data: product });
     } catch (error) {
       next(error);

@@ -22,6 +22,7 @@ import InventoryPage from "@/pages/inventory/InventoryPage";
 import WeeklyReportPage from "@/pages/reports/WeeklyReportPage";
 import BDDashboardPage from "@/pages/bd/BDDashboardPage";
 import GrantsPipelinePage from "@/pages/bd/GrantsPipelinePage";
+import MealMatePage from "@/pages/mealmate/MealMatePage";
 import { SECTIONS } from "../../shared/constants.js";
 
 /* ── Placeholder pages for future phases ── */
@@ -109,11 +110,7 @@ function AppRoutes() {
           path="mealmate"
           element={
             <ProtectedRoute section={SECTIONS.MEALMATE}>
-              <PlaceholderPage
-                icon={UtensilsCrossed}
-                title="My Meal Mate"
-                phase="Phase 4"
-              />
+              <MealMatePage />
             </ProtectedRoute>
           }
         />
