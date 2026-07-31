@@ -12,7 +12,7 @@ import {
   ChevronRight,
   FileText,
   Activity,
-  Award
+  Award,
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { SECTIONS } from "../../../../shared/constants.js";
@@ -110,16 +110,23 @@ const NAV_GROUPS = [
   },
 ];
 
-export default function Sidebar({ collapsed, onToggle }) {
+export default function Sidebar({ collapsed, onToggle, mobileOpen, setMobileOpen }) {
   const { canRead } = useAuth();
 
   return (
-    <aside
-      className={`fixed left-0 top-0 bottom-0 bg-[#0e2a2c]/80 backdrop-blur-xl border-r border-brand-lime/10 flex flex-col z-40 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${
-        collapsed ? "w-[72px]" : "w-[260px]"
-      }`}
-      id="sidebar-nav"
-    >
+    <>
+      {mobileOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden backdrop-blur-sm"
+          onClick={() => setMobileOpen && setMobileOpen(false)}
+        />
+      )}
+      <aside
+        className={`fixed left-0 top-0 bottom-0 bg-[#0e2a2c]/80 backdrop-blur-xl border-r border-brand-lime/10 flex flex-col z-50 transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] max-md:w-[260px] max-md:-translate-x-full ${
+          mobileOpen ? "max-md:translate-x-0" : ""
+        } ${collapsed ? "md:w-[72px]" : "md:w-[260px]"}`}
+        id="sidebar-nav"
+      >
       <div
         className={`flex items-center h-16 border-b border-brand-lime/10 flex-shrink-0 ${collapsed ? "px-0 justify-center" : "px-5"}`}
       >
@@ -161,6 +168,7 @@ export default function Sidebar({ collapsed, onToggle }) {
                     <NavLink
                       to={item.to}
                       end={true}
+                      onClick={() => setMobileOpen && setMobileOpen(false)}
                       id={`nav-${item.to.replace(/\//g, "-").slice(1)}`}
                       className={({ isActive }) =>
                         `flex items-center rounded-lg h-10 transition-all ${
@@ -192,7 +200,7 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Collapse toggle */}
       <button
-        className="h-14 border-t border-brand-lime/10 flex items-center justify-center text-gray-500 hover:text-brand-lime hover:bg-gray-800/30 transition-colors"
+        className="hidden md:flex h-14 border-t border-brand-lime/10 w-full items-center justify-center text-gray-500 hover:text-brand-lime hover:bg-gray-800/30 transition-colors"
         onClick={onToggle}
         id="sidebar-toggle"
         aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -205,5 +213,6 @@ export default function Sidebar({ collapsed, onToggle }) {
         {!collapsed && <span className="text-sm font-medium">Collapse</span>}
       </button>
     </aside>
+    </>
   );
 }

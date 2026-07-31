@@ -27,3 +27,10 @@ coverage/
 
 task.md
 implementation_plan.md
+oef-sprint-calendar.md
+
+*.xlsx
+*.docx
+
+seed.js
+seed_phase3.js

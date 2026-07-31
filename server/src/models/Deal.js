@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DEAL_STAGES, RAG_STATUS } from '../../../shared/constants.js';
+import { DEAL_STAGES, RAG_STATUS, FORECAST_CATEGORIES } from '../../../shared/constants.js';
 
 const dealSchema = new mongoose.Schema(
   {
@@ -13,19 +13,34 @@ const dealSchema = new mongoose.Schema(
       enum: Object.values(DEAL_STAGES),
       default: DEAL_STAGES.PROSPECTING,
     },
+    segment: { type: String },
     value_naira: { type: Number, default: 0 },
     probability_pct: { type: Number, default: 0, min: 0, max: 100 },
     expected_close_date: { type: Date },
+    contract_term_months: { type: Number },
+    forecast_category: {
+      type: String,
+      enum: Object.values(FORECAST_CATEGORIES),
+      default: FORECAST_CATEGORIES.PIPELINE,
+    },
     last_activity_date: { type: Date, default: Date.now },
     next_follow_up: { type: Date },
+    stage_entered_date: { type: Date, default: Date.now },
     rag_status: {
       type: String,
       enum: Object.values(RAG_STATUS),
       default: RAG_STATUS.AMBER,
     },
+    risk_reason: { type: String },
+    lost_reason: { type: String },
     notes: { type: String },
     assigned_to: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     source: { type: String },
+    vendor_compliance: {
+      pencom: { type: Boolean, default: false },
+      tax_clearance: { type: Boolean, default: false },
+      cac: { type: Boolean, default: false },
+    },
   },
   {
     timestamps: true,
