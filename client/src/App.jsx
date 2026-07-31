@@ -23,7 +23,9 @@ import WeeklyReportPage from "@/pages/reports/WeeklyReportPage";
 import BDDashboardPage from "@/pages/bd/BDDashboardPage";
 import GrantsPipelinePage from "@/pages/bd/GrantsPipelinePage";
 import MealMatePage from "@/pages/mealmate/MealMatePage";
-import { SECTIONS } from "../../shared/constants.js";
+import SocialMediaPage from "@/pages/social/SocialMediaPage";
+import UserManagementPage from "@/pages/admin/UserManagementPage";
+import { SECTIONS, ACCESS_LEVELS } from "../../shared/constants.js";
 
 /* ── Placeholder pages for future phases ── */
 function PlaceholderPage({ icon, title, phase }) {
@@ -118,12 +120,11 @@ function AppRoutes() {
         <Route
           path="social"
           element={
-            <ProtectedRoute section={SECTIONS.SOCIAL}>
-              <PlaceholderPage
-                icon={Instagram}
-                title="Social Media Analytics"
-                phase="Phase 4"
-              />
+            <ProtectedRoute
+              section={SECTIONS.SOCIAL}
+              minLevel={ACCESS_LEVELS.VIEW}
+            >
+              <SocialMediaPage />
             </ProtectedRoute>
           }
         />
@@ -145,11 +146,7 @@ function AppRoutes() {
           path="admin/users"
           element={
             <ProtectedRoute section={SECTIONS.USER_MGMT} minLevel="edit">
-              <PlaceholderPage
-                icon={Users}
-                title="User Management"
-                phase="Phase 6"
-              />
+              <UserManagementPage />
             </ProtectedRoute>
           }
         />

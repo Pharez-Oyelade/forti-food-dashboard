@@ -23,7 +23,7 @@ export default function MealMatePage() {
     need_score: 0,
     readiness_score: 0,
     status: "Identified",
-    meals_delivered: 0,
+    meals_delivered: "",
   });
 
   const fetchSchools = async () => {
@@ -67,7 +67,7 @@ export default function MealMatePage() {
         need_score: 0,
         readiness_score: 0,
         status: "Identified",
-        meals_delivered: 0,
+        meals_delivered: "",
       });
     }
     setIsModalOpen(true);
@@ -113,7 +113,8 @@ export default function MealMatePage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center">
         <h1 className="text-2xl font-semibold text-slate-100 flex items-center gap-2">
-          <Heart className="text-brand-lime" /> My Meal Mate Framework
+          {/* <Heart className="text-brand-lime" />  */}
+          My Meal Mate Framework
         </h1>
         {canWrite(SECTIONS.MEALMATE) && (
           <div className="flex space-x-3">
@@ -156,68 +157,68 @@ export default function MealMatePage() {
       <Card title="School Priority List">
         <div className="overflow-x-auto w-full">
           <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-slate-700 text-slate-400 text-sm">
-              <th className="p-3">School Name</th>
-              <th className="p-3">Location</th>
-              <th className="p-3 text-right">Pupil Count</th>
-              <th className="p-3 text-right">Priority Score</th>
-              <th className="p-3 text-right">Meals Delivered</th>
-              <th className="p-3">Status</th>
-              <th className="p-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {schools.length === 0 ? (
-              <tr>
-                <td colSpan="7" className="p-4 text-center text-slate-500">
-                  No schools found
-                </td>
+            <thead>
+              <tr className="border-b border-slate-700 text-slate-400 text-sm">
+                <th className="p-3">School Name</th>
+                <th className="p-3">Location</th>
+                <th className="p-3 text-right">Pupil Count</th>
+                <th className="p-3 text-right">Priority Score</th>
+                <th className="p-3 text-right">Meals Delivered</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-right">Actions</th>
               </tr>
-            ) : (
-              schools.map((school) => (
-                <tr
-                  key={school._id}
-                  className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
-                >
-                  <td className="p-3 font-medium text-slate-200">
-                    {school.school_name}
-                  </td>
-                  <td className="p-3 text-slate-400">{school.location}</td>
-                  <td className="p-3 text-right">{school.pupil_count}</td>
-                  <td className="p-3 text-right">
-                    <span className="bg-slate-800 px-2 py-1 rounded-md text-brand-lime font-mono">
-                      {school.priority_score}/100
-                    </span>
-                  </td>
-                  <td className="p-3 text-right text-slate-300">
-                    {school.meals_delivered}
-                  </td>
-                  <td className="p-3">
-                    <StatusBadge status={school.status} type="school" />
-                  </td>
-                  <td className="p-3 text-right space-x-2">
-                    {canWrite(SECTIONS.MEALMATE) && (
-                      <button
-                        onClick={() => handleOpenModal(school)}
-                        className="text-slate-400 hover:text-brand-lime transition-colors cursor-pointer"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                    )}
-                    {canDelete(SECTIONS.MEALMATE) && (
-                      <button
-                        onClick={() => handleDelete(school._id)}
-                        className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
+            </thead>
+            <tbody>
+              {schools.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="p-4 text-center text-slate-500">
+                    No schools found
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
+              ) : (
+                schools.map((school) => (
+                  <tr
+                    key={school._id}
+                    className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
+                  >
+                    <td className="p-3 font-medium text-slate-200">
+                      {school.school_name}
+                    </td>
+                    <td className="p-3 text-slate-400">{school.location}</td>
+                    <td className="p-3 text-right">{school.pupil_count}</td>
+                    <td className="p-3 text-right">
+                      <span className="bg-slate-800 px-2 py-1 rounded-md text-brand-lime font-mono">
+                        {school.priority_score}/100
+                      </span>
+                    </td>
+                    <td className="p-3 text-right text-slate-300">
+                      {school.meals_delivered}
+                    </td>
+                    <td className="p-3">
+                      <StatusBadge status={school.status} type="school" />
+                    </td>
+                    <td className="p-3 text-right space-x-2">
+                      {canWrite(SECTIONS.MEALMATE) && (
+                        <button
+                          onClick={() => handleOpenModal(school)}
+                          className="text-slate-400 hover:text-brand-lime transition-colors cursor-pointer"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                      )}
+                      {canDelete(SECTIONS.MEALMATE) && (
+                        <button
+                          onClick={() => handleDelete(school._id)}
+                          className="text-slate-400 hover:text-red-500 transition-colors cursor-pointer"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
           </table>
         </div>
       </Card>
@@ -285,7 +286,7 @@ export default function MealMatePage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        pupil_count: Number(e.target.value),
+                        pupil_count: e.target.value === '' ? '' : Number(e.target.value),
                       })
                     }
                   />
@@ -302,7 +303,7 @@ export default function MealMatePage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        meals_delivered: Number(e.target.value),
+                        meals_delivered: e.target.value === '' ? '' : Number(e.target.value),
                       })
                     }
                   />
@@ -320,7 +321,7 @@ export default function MealMatePage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        need_score: Number(e.target.value),
+                        need_score: e.target.value === '' ? '' : Number(e.target.value),
                       })
                     }
                   />
@@ -338,7 +339,7 @@ export default function MealMatePage() {
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        readiness_score: Number(e.target.value),
+                        readiness_score: e.target.value === '' ? '' : Number(e.target.value),
                       })
                     }
                   />

@@ -14,6 +14,7 @@ export const createProductSchema = z.object({
   status: z.enum(Object.values(INVENTORY_STATUS)).optional(),
   expiry_date: z.string().datetime().optional().nullable(),
   batch_number: z.string().optional(),
+  meal_type: z.enum(['Single-SKU', 'Two-Component', 'Other']).optional(),
   category: z.string().optional(),
   reorder_point: z.number().min(0).optional(),
   notes: z.string().optional(),

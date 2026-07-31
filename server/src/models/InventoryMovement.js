@@ -7,7 +7,7 @@ const inventoryMovementSchema = new mongoose.Schema(
     quantity: { type: Number, required: true },
     type: {
       type: String,
-      enum: ['SALE', 'DEMO', 'MARKETING', 'REGULATORY', 'RETURN'],
+      enum: ['SALE', 'DEMO', 'MARKETING', 'REGULATORY', 'RETURN', 'RECEIVE'],
       required: true,
     },
     person: { type: String },

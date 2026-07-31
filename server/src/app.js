@@ -18,6 +18,10 @@ import bdMetricsRoutes from "./routes/bd-metrics.routes.js";
 import activityRoutes from "./routes/activity.routes.js";
 import grantRoutes from "./routes/grant.routes.js";
 import schoolRoutes from "./routes/school.routes.js";
+import leadRoutes from "./routes/lead.routes.js";
+import marketingRoutes from "./routes/marketing.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import purchaseOrderRoutes from "./routes/purchaseOrder.routes.js";
 
 // ── Initialise Express ──
 const app = express();
@@ -50,6 +54,10 @@ app.use("/api/v1/metrics", bdMetricsRoutes);
 app.use("/api/v1/activities", activityRoutes);
 app.use("/api/v1/grants", grantRoutes);
 app.use("/api/v1/schools", schoolRoutes);
+app.use("/api/v1/leads", leadRoutes);
+app.use("/api/v1/marketing", marketingRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/purchase-orders", purchaseOrderRoutes);
 
 // ── Global Error Handler ──
 app.use(errorHandler);

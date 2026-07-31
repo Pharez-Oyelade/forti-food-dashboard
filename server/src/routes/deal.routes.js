@@ -6,7 +6,7 @@ import { validate } from '../middleware/validate.js';
 import { ownerFilter } from '../middleware/ownerFilter.js';
 import { fieldFilter } from '../middleware/fieldFilter.js';
 import { createDealSchema, updateDealSchema } from '../validators/deal.validators.js';
-import { ACCESS_LEVELS, SECTIONS } from '../../../shared/constants.js';
+import { ACCESS_LEVELS, SECTIONS, DEAL_STAGES, RAG_STATUS } from '../../../shared/constants.js';
 
 const router = express.Router();
 
@@ -111,11 +111,37 @@ router.put(
   async (req, res, next) => {
     try {
       const filter = { _id: req.params.id, ...(req.rbacFilter || {}) };
-      const deal = await Deal.findOneAndUpdate(filter, req.body, { new: true });
       
-      if (!deal) {
+      // Fetch the existing deal first to check current segment if not provided in payload
+      const existingDeal = await Deal.findOne(filter);
+      if (!existingDeal) {
         return res.status(404).json({ success: false, message: 'Deal not found or access denied' });
       }
+
+      // Check Vendor Compliance Gates for Government Deals
+      const segment = req.body.segment || existingDeal.segment;
+      if (segment && segment.toLowerCase() === 'government') {
+        const targetStage = req.body.deal_stage || existingDeal.deal_stage;
+        
+        // Stages that require full vendor compliance
+        const restrictedStages = [DEAL_STAGES.PROPOSAL, DEAL_STAGES.NEGOTIATION, DEAL_STAGES.CLOSED_WON];
+        
+        if (restrictedStages.includes(targetStage)) {
+          const compliance = {
+            ...(existingDeal.vendor_compliance ? existingDeal.vendor_compliance.toObject() : {}),
+            ...(req.body.vendor_compliance || {})
+          };
+          
+          if (!compliance.pencom || !compliance.tax_clearance || !compliance.cac) {
+            return res.status(400).json({ 
+              success: false, 
+              message: 'Government deals cannot progress to Proposal, Negotiation, or Closed Won without full vendor compliance (PENCOM, Tax Clearance, CAC).' 
+            });
+          }
+        }
+      }
+
+      const deal = await Deal.findOneAndUpdate(filter, req.body, { new: true });
       
       res.json({ success: true, data: deal });
     } catch (error) {
@@ -123,6 +149,35 @@ router.put(
     }
   }
 );
+
+// Bulk Close Stalled Deals
+router.post('/bulk-close-stalled', authorize(SECTIONS.PIPELINE, ACCESS_LEVELS.FULL), async (req, res, next) => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const result = await Deal.updateMany(
+      {
+        deal_stage: { $nin: [DEAL_STAGES.CLOSED_WON, DEAL_STAGES.CLOSED_LOST] },
+        $or: [
+          { last_activity_date: { $lt: thirtyDaysAgo } },
+          { rag_status: RAG_STATUS.RED }
+        ]
+      },
+      {
+        $set: {
+          deal_stage: DEAL_STAGES.CLOSED_LOST,
+          lost_reason: 'Strategic Cleanup - Stalled Deal',
+          rag_status: RAG_STATUS.RED
+        }
+      }
+    );
+
+    res.json({ success: true, message: `Successfully closed ${result.modifiedCount} stalled deals.` });
+  } catch (error) {
+    next(error);
+  }
+});
 
 // Delete Deal
 router.delete('/:id', authorize(SECTIONS.PIPELINE, ACCESS_LEVELS.FULL), async (req, res, next) => {

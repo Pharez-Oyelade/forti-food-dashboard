@@ -17,7 +17,7 @@ export default function GrantsPipelinePage() {
   const [editingGrant, setEditingGrant] = useState(null);
   const [formData, setFormData] = useState({
     program_name: '', funder_organisation: '', type: GRANT_TYPES.GRANT,
-    status: GRANT_STATUSES.RESEARCHING, award_amount: 0, currency: 'USD'
+    status: GRANT_STATUSES.RESEARCHING, award_amount: "", currency: 'USD'
   });
 
   const fetchGrants = async () => {
@@ -55,7 +55,7 @@ export default function GrantsPipelinePage() {
       setEditingGrant(null);
       setFormData({
         program_name: '', funder_organisation: '', type: GRANT_TYPES.GRANT,
-        status: GRANT_STATUSES.RESEARCHING, award_amount: 0, currency: 'USD'
+        status: GRANT_STATUSES.RESEARCHING, award_amount: "", currency: 'USD'
       });
     }
     setIsModalOpen(true);
@@ -201,7 +201,7 @@ export default function GrantsPipelinePage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">Award Amount</label>
-                  <input type="number" min="0" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none" value={formData.award_amount} onChange={e => setFormData({...formData, award_amount: Number(e.target.value)})} />
+                  <input type="number" min="0" className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none" value={formData.award_amount} onChange={e => setFormData({...formData, award_amount: e.target.value === '' ? '' : Number(e.target.value)})} />
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">Currency</label>

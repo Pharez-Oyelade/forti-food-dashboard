@@ -62,6 +62,14 @@ export const RAG_STATUS = {
   GREEN: 'Green',
 };
 
+// ── Forecast Categories ──
+export const FORECAST_CATEGORIES = {
+  COMMIT: 'Commit',
+  BEST_CASE: 'Best Case',
+  PIPELINE: 'Pipeline',
+  OMITTED: 'Omitted',
+};
+
 // ── BD Activity Types ──
 export const ACTIVITY_TYPES = {
   CALL: 'Call',
