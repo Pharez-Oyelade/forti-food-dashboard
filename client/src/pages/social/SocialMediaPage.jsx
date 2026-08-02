@@ -123,17 +123,16 @@ export default function SocialMediaPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-3 md:items-center">
-        <h1 className="text-2xl font-semibold text-slate-100">
-          Instagram Marketing Performance
-        </h1>
-        <Button
-          variant="primary"
-          icon={Plus}
-          onClick={() => handleOpenModal()}
-        >
-          Log Weekly Metrics
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-100">Social Media Tracker</h1>
+          <p className="text-sm text-slate-400">Weekly performance and engagement metrics</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Button variant="primary" icon={Plus} onClick={() => handleOpenModal()}>
+            Log Metrics
+          </Button>
+        </div>
       </div>
 
       {/* KPI Cards */}

@@ -242,6 +242,82 @@ export default function SalesPipelinePage() {
   );
   const canSeeMoney = summary?.total_value !== undefined;
 
+  const renderDealsTable = (dealsToRender, title) => (
+    <Card title={title} className="mb-6">
+      <div className="overflow-x-auto w-full">
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-slate-700 text-slate-400 text-sm">
+              <th className="p-3">Deal Name</th>
+              <th className="p-3">Company</th>
+              <th className="p-3">Stage</th>
+              {canSeeMoney && <th className="p-3">Value</th>}
+              <th className="p-3">Probability</th>
+              <th className="p-3">Status</th>
+              <th className="p-3">Rep</th>
+              <th className="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {dealsToRender.length === 0 ? (
+              <tr>
+                <td
+                  colSpan={canSeeMoney ? "8" : "7"}
+                  className="p-4 text-center text-slate-500"
+                >
+                  No deals found
+                </td>
+              </tr>
+            ) : (
+              dealsToRender.map((deal) => (
+                <tr
+                  key={deal._id}
+                  className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
+                >
+                  <td className="p-3 font-medium text-slate-200">
+                    {deal.deal_name}
+                  </td>
+                  <td className="p-3 text-slate-400">{deal.company}</td>
+                  <td className="p-3">{deal.deal_stage}</td>
+                  {canSeeMoney && (
+                    <td className="p-3">
+                      {formatCurrency(deal.value_naira)}
+                    </td>
+                  )}
+                  <td className="p-3">{deal.probability_pct}%</td>
+                  <td className="p-3">
+                    <StatusBadge status={deal.rag_status} type="rag" />
+                  </td>
+                  <td className="p-3 text-slate-400">
+                    {deal.assigned_to?.name || "Unassigned"}
+                  </td>
+                  <td className="p-3 text-right space-x-2">
+                    {canWrite(SECTIONS.PIPELINE) && (
+                      <button
+                        onClick={() => handleOpenModal(deal)}
+                        className="text-slate-400 hover:text-brand-lime transition-colors"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    )}
+                    {canDelete(SECTIONS.PIPELINE) && (
+                      <button
+                        onClick={() => handleDelete(deal._id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+
   if (loading)
     return (
       <div className="flex justify-center p-10">
@@ -256,7 +332,7 @@ export default function SalesPipelinePage() {
           Sales Pipeline
         </h1>
         {canWrite(SECTIONS.PIPELINE) && (
-          <div className="flex space-x-3">
+          <div className="flex flex-wrap gap-3">
             <Button
               variant="secondary"
               icon={Target}
@@ -324,80 +400,16 @@ export default function SalesPipelinePage() {
             )}
           </div>
 
-          {/* Deals Table */}
-          <Card title="All Deals">
-            <div className="overflow-x-auto w-full">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-slate-700 text-slate-400 text-sm">
-                    <th className="p-3">Deal Name</th>
-                    <th className="p-3">Company</th>
-                    <th className="p-3">Stage</th>
-                    {canSeeMoney && <th className="p-3">Value</th>}
-                    <th className="p-3">Probability</th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Rep</th>
-                    <th className="p-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deals.length === 0 ? (
-                    <tr>
-                      <td
-                        colSpan="8"
-                        className="p-4 text-center text-slate-500"
-                      >
-                        No deals found
-                      </td>
-                    </tr>
-                  ) : (
-                    deals.map((deal) => (
-                      <tr
-                        key={deal._id}
-                        className="border-b border-slate-800 hover:bg-slate-800/50 transition-colors"
-                      >
-                        <td className="p-3 font-medium text-slate-200">
-                          {deal.deal_name}
-                        </td>
-                        <td className="p-3 text-slate-400">{deal.company}</td>
-                        <td className="p-3">{deal.deal_stage}</td>
-                        {canSeeMoney && (
-                          <td className="p-3">
-                            {formatCurrency(deal.value_naira)}
-                          </td>
-                        )}
-                        <td className="p-3">{deal.probability_pct}%</td>
-                        <td className="p-3">
-                          <StatusBadge status={deal.rag_status} type="rag" />
-                        </td>
-                        <td className="p-3 text-slate-400">
-                          {deal.assigned_to?.name || "Unassigned"}
-                        </td>
-                        <td className="p-3 text-right space-x-2">
-                          {canWrite(SECTIONS.PIPELINE) && (
-                            <button
-                              onClick={() => handleOpenModal(deal)}
-                              className="text-slate-400 hover:text-brand-lime transition-colors"
-                            >
-                              <Edit2 size={16} />
-                            </button>
-                          )}
-                          {canDelete(SECTIONS.PIPELINE) && (
-                            <button
-                              onClick={() => handleDelete(deal._id)}
-                              className="text-slate-400 hover:text-red-500 transition-colors"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+          {/* Active Deals Table */}
+          {renderDealsTable(
+            deals.filter(d => d.deal_stage !== DEAL_STAGES.CLOSED_WON && d.deal_stage !== DEAL_STAGES.CLOSED_LOST && d.deal_stage !== DEAL_STAGES.CANCELLED),
+            "Active Pipeline"
+          )}
+          {/* Closed Deals Table */}
+          {renderDealsTable(
+            deals.filter(d => d.deal_stage === DEAL_STAGES.CLOSED_WON || d.deal_stage === DEAL_STAGES.CLOSED_LOST || d.deal_stage === DEAL_STAGES.CANCELLED),
+            "Closed Deals"
+          )}
         </>
       ) : (
         <>

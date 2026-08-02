@@ -121,18 +121,16 @@ export default function UserManagementPage() {
           <Button
             variant="danger"
             onClick={handlePurgeStalledDeals}
-            className="flex items-center gap-2"
+            icon={AlertOctagon}
           >
-            <AlertOctagon size={16} />
             Purge Stalled Deals
           </Button>
           <Button
             variant="primary"
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2"
+            icon={Plus}
           >
-            <Plus size={16} />
-            <span>Add User</span>
+            Add User
           </Button>
         </div>
       </div>

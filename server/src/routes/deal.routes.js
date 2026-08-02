@@ -20,7 +20,12 @@ router.get('/summary', fieldFilter(SECTIONS.PIPELINE), ownerFilter, async (req, 
     const filter = req.rbacFilter || {};
     
     const summary = await Deal.aggregate([
-      { $match: filter },
+      { 
+        $match: { 
+          ...filter,
+          deal_stage: { $nin: [DEAL_STAGES.CLOSED_WON, DEAL_STAGES.CLOSED_LOST, DEAL_STAGES.CANCELLED] }
+        } 
+      },
       {
         $group: {
           _id: null,

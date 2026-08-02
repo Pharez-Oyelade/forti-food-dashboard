@@ -42,7 +42,9 @@ export const INVENTORY_STATUS = {
   OK: 'OK',
   DEPLETED: 'Depleted',
   SLOW_MOVER: 'Slow Mover',
-  EXPIRY_RISK: 'Expiry Risk',
+  AT_RISK: 'At Risk',
+  EXPIRED: 'Expired',
+  REORDER: 'Reorder',
 };
 
 // ── Deal Stages ──

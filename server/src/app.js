@@ -5,6 +5,11 @@ import compression from "compression";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
+import path from "path";
+import { fileURLToPath } from "url";
+import cron from "node-cron";
+import { runAllAutomations } from "./services/automation.service.js";
+import { generateWeeklySnapshot } from "./services/snapshot.service.js";
 import env from "./config/env.js";
 import connectDB from "./config/db.js";
 import { errorHandler } from "./middleware/errorHandler.js";
@@ -22,6 +27,9 @@ import leadRoutes from "./routes/lead.routes.js";
 import marketingRoutes from "./routes/marketing.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import purchaseOrderRoutes from "./routes/purchaseOrder.routes.js";
+import importRoutes from "./routes/import.routes.js";
+import gapRoutes from "./routes/gap.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
 
 // ── Initialise Express ──
 const app = express();
@@ -58,6 +66,9 @@ app.use("/api/v1/leads", leadRoutes);
 app.use("/api/v1/marketing", marketingRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/purchase-orders", purchaseOrderRoutes);
+app.use("/api/v1/import", importRoutes);
+app.use("/api/v1/gaps", gapRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
 
 // ── Global Error Handler ──
 app.use(errorHandler);
@@ -68,6 +79,19 @@ async function start() {
 
   app.listen(env.PORT, () => {
     console.log(`\nForti Dashboard API running on port ${env.PORT}`);
+    
+    // Schedule Automation Engine to run daily at midnight
+    cron.schedule("0 0 * * *", () => {
+      console.log("Running scheduled nightly automation tasks...");
+      runAllAutomations();
+    });
+
+    // Schedule Weekly Snapshot early Friday (2 AM)
+    cron.schedule("0 2 * * 5", () => {
+      console.log("Running weekly snapshot...");
+      generateWeeklySnapshot();
+    });
+
     console.log(`Environment: ${env.NODE_ENV}`);
     console.log(`CORS origin: ${env.CORS_ORIGIN}\n`);
   });

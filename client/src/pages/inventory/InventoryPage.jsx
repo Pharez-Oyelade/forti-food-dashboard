@@ -256,9 +256,8 @@ export default function InventoryPage() {
             {products
               .filter(
                 (p) =>
-                  p.status === INVENTORY_STATUS.EXPIRY_RISK ||
-                  (p.units_on_hand > 5000 &&
-                    p.product_name.includes("Chicken")),
+                  p.status === INVENTORY_STATUS.AT_RISK ||
+                  p.status === INVENTORY_STATUS.EXPIRED
               )
               .map((p) => (
                 <li key={p._id}>

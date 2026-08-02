@@ -24,6 +24,7 @@ import BDDashboardPage from "@/pages/bd/BDDashboardPage";
 import GrantsPipelinePage from "@/pages/bd/GrantsPipelinePage";
 import MealMatePage from "@/pages/mealmate/MealMatePage";
 import SocialMediaPage from "@/pages/social/SocialMediaPage";
+import InsightsPage from "@/pages/insights/InsightsPage";
 import UserManagementPage from "@/pages/admin/UserManagementPage";
 import { SECTIONS, ACCESS_LEVELS } from "../../shared/constants.js";
 
@@ -132,12 +133,8 @@ function AppRoutes() {
         <Route
           path="gaps"
           element={
-            <ProtectedRoute section={SECTIONS.BUSINESS_GAPS}>
-              <PlaceholderPage
-                icon={AlertTriangle}
-                title="Business Gaps"
-                phase="Phase 5"
-              />
+            <ProtectedRoute section={SECTIONS.BUSINESS_GAPS} minLevel="view">
+              <InsightsPage />
             </ProtectedRoute>
           }
         />
