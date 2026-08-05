@@ -27,7 +27,6 @@ export default function SalesPipelinePage() {
   const [editingDeal, setEditingDeal] = useState(null);
   const [formData, setFormData] = useState({
     deal_name: "",
-    company: "",
     segment: "",
     deal_stage: DEAL_STAGES.PROSPECTING,
     value_naira: "",
@@ -48,7 +47,6 @@ export default function SalesPipelinePage() {
   const [editingLead, setEditingLead] = useState(null);
   const [leadFormData, setLeadFormData] = useState({
     lead_name: "",
-    company: "",
     segment: "",
     country: "Nigeria",
     lead_source: "",
@@ -90,7 +88,6 @@ export default function SalesPipelinePage() {
       setEditingDeal(deal);
       setFormData({
         deal_name: deal.deal_name,
-        company: deal.company,
         segment: deal.segment || "",
         deal_stage: deal.deal_stage,
         value_naira: deal.value_naira || "",
@@ -106,7 +103,6 @@ export default function SalesPipelinePage() {
       setEditingDeal(null);
       setFormData({
         deal_name: "",
-        company: "",
         segment: "",
         deal_stage: DEAL_STAGES.PROSPECTING,
         value_naira: "",
@@ -161,7 +157,6 @@ export default function SalesPipelinePage() {
       setEditingLead(lead);
       setLeadFormData({
         lead_name: lead.lead_name,
-        company: lead.company,
         segment: lead.segment || "",
         country: lead.country || "Nigeria",
         lead_source: lead.lead_source || "",
@@ -176,7 +171,6 @@ export default function SalesPipelinePage() {
       setEditingLead(null);
       setLeadFormData({
         lead_name: "",
-        company: "",
         segment: "",
         country: "Nigeria",
         lead_source: "",
@@ -249,7 +243,7 @@ export default function SalesPipelinePage() {
           <thead>
             <tr className="border-b border-slate-700 text-slate-400 text-sm">
               <th className="p-3">Deal Name</th>
-              <th className="p-3">Company</th>
+              <th className="p-3">Segment</th>
               <th className="p-3">Stage</th>
               {canSeeMoney && <th className="p-3">Value</th>}
               <th className="p-3">Probability</th>
@@ -277,7 +271,7 @@ export default function SalesPipelinePage() {
                   <td className="p-3 font-medium text-slate-200">
                     {deal.deal_name}
                   </td>
-                  <td className="p-3 text-slate-400">{deal.company}</td>
+                  <td className="p-3 text-slate-400">{deal.segment || "-"}</td>
                   <td className="p-3">{deal.deal_stage}</td>
                   {canSeeMoney && (
                     <td className="p-3">
@@ -434,7 +428,7 @@ export default function SalesPipelinePage() {
                 <thead>
                   <tr className="border-b border-slate-700 text-slate-400 text-sm">
                     <th className="p-3">Lead Name</th>
-                    <th className="p-3">Company</th>
+                    <th className="p-3">Segment</th>
                     <th className="p-3">Stage</th>
                     <th className="p-3 text-center">Gates (4)</th>
                     {canSeeMoney && <th className="p-3">Est. Value</th>}
@@ -462,7 +456,7 @@ export default function SalesPipelinePage() {
                         <td className="p-3 font-medium text-slate-200">
                           {lead.lead_name}
                         </td>
-                        <td className="p-3 text-slate-400">{lead.company}</td>
+                        <td className="p-3 text-slate-400">{lead.segment || "-"}</td>
                         <td className="p-3">{lead.lead_stage}</td>
                         <td className="p-3 text-center">
                           <span
@@ -567,13 +561,22 @@ export default function SalesPipelinePage() {
                   <label className="block text-sm text-slate-400 mb-1">
                     Segment
                   </label>
-                  <input
+                  <select
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
                     value={formData.segment}
                     onChange={(e) =>
                       setFormData({ ...formData, segment: e.target.value })
                     }
-                  />
+                  >
+                    <option value="">Select Segment...</option>
+                    <option value="Defence">Defence</option>
+                    <option value="Humanitarian">Humanitarian</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Government">Government</option>
+                    <option value="NGO">NGO</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -825,19 +828,27 @@ export default function SalesPipelinePage() {
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">
-                    Company
+                    Segment
                   </label>
-                  <input
-                    required
+                  <select
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
-                    value={leadFormData.company}
+                    value={leadFormData.segment}
                     onChange={(e) =>
                       setLeadFormData({
                         ...leadFormData,
-                        company: e.target.value,
+                        segment: e.target.value,
                       })
                     }
-                  />
+                  >
+                    <option value="">Select Segment...</option>
+                    <option value="Defence">Defence</option>
+                    <option value="Humanitarian">Humanitarian</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Government">Government</option>
+                    <option value="NGO">NGO</option>
+                    <option value="Retail">Retail</option>
+                    <option value="Other">Other</option>
+                  </select>
                 </div>
                 <div>
                   <label className="block text-sm text-slate-400 mb-1">
