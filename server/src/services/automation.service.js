@@ -3,6 +3,7 @@ import { Deal } from "../models/Deal.js";
 import { InstagramMetric } from "../models/InstagramMetric.js";
 import { BusinessGap } from "../models/BusinessGap.js";
 import User from "../models/User.js";
+import { Subscriber } from "../models/Subscriber.js";
 import { INVENTORY_STATUS, DEAL_STAGES, FORECAST_CATEGORIES } from "../../../shared/constants.js";
 
 /**
@@ -164,12 +165,25 @@ export const runPipelinePass = async () => {
   }
 };
 
+// 4. Subscriber Risk Pass
+export const runSubscriberPass = async () => {
+  console.log("[Automation Engine] Running Subscriber Pass...");
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  
+  await Subscriber.updateMany(
+    { last_payment_date: { $lt: thirtyDaysAgo }, status: { $ne: "At-Risk" } },
+    { $set: { status: "At-Risk" } }
+  );
+};
+
 // Orchestrator
 export const runAllAutomations = async () => {
   try {
     await runInventoryPass();
     await runSocialPass();
     await runPipelinePass();
+    await runSubscriberPass();
   } catch (err) {
     console.error("[Automation Engine] Failed during execution:", err);
   }

@@ -19,8 +19,8 @@ export default function DashboardHome() {
     const fetchDashboardData = async () => {
       try {
         const [alertsRes, summaryRes] = await Promise.all([
-          get("/products/alerts"),
-          get("/dashboard/summary")
+          get("/products/alerts").catch(() => ({ success: false, data: [] })),
+          get("/dashboard/summary").catch(() => ({ success: false, data: null }))
         ]);
         
         if (alertsRes.success) setAlerts(alertsRes.data);
@@ -158,7 +158,7 @@ export default function DashboardHome() {
             <h3 className="text-slate-400 text-sm font-medium mt-4">Engagement Rate</h3>
             <div className="flex items-baseline gap-2 mt-1">
               <p className="text-2xl font-bold text-slate-100">{summary?.social?.engagement_rate?.toFixed(2) || "0.00"}%</p>
-              {summary?.social?.engagement_delta !== 0 && (
+              {summary?.social?.engagement_delta != null && summary.social.engagement_delta !== 0 && (
                 <span className={`text-xs font-medium flex items-center ${summary.social.engagement_delta > 0 ? "text-emerald-400" : "text-red-400"}`}>
                   {summary.social.engagement_delta > 0 ? <TrendingUp size={12} className="mr-0.5" /> : <TrendingDown size={12} className="mr-0.5" />}
                   {Math.abs(summary.social.engagement_delta).toFixed(2)}%

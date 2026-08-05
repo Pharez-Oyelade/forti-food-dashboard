@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const schoolSchema = new mongoose.Schema(
   {
     school_name: { type: String, required: true },
-    location: { type: String, required: true },
+    location: { type: String },
     pupil_count: { type: Number, default: 0 },
     vulnerability_data: { type: String },
     leadership_contacts: { type: String },
