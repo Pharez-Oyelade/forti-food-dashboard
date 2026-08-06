@@ -8,7 +8,6 @@ const leadSchema = new mongoose.Schema({
   },
   company: {
     type: String,
-    required: true,
     trim: true,
   },
   segment: {

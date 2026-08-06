@@ -13,8 +13,13 @@ router.use(authorize(SECTIONS.USER_MGMT, ACCESS_LEVELS.FULL));
 // Get all users
 router.get('/', async (req, res, next) => {
   try {
-    const users = await User.find().populate('role').sort('-createdAt');
-    res.json({ success: true, data: users });
+    const users = await User.find().populate('roles').sort('-createdAt');
+    const usersWithVirtualRole = users.map(u => {
+      const obj = u.toObject();
+      obj.role = u.getMergedRole();
+      return obj;
+    });
+    res.json({ success: true, data: usersWithVirtualRole });
   } catch (error) {
     next(error);
   }
@@ -34,8 +39,10 @@ router.get('/roles', async (req, res, next) => {
 router.post('/', async (req, res, next) => {
   try {
     const user = await User.create(req.body);
-    const populatedUser = await User.findById(user._id).populate('role');
-    res.status(201).json({ success: true, data: populatedUser });
+    const populatedUser = await User.findById(user._id).populate('roles');
+    const obj = populatedUser.toObject();
+    obj.role = populatedUser.getMergedRole();
+    res.status(201).json({ success: true, data: obj });
   } catch (error) {
     next(error);
   }
@@ -57,8 +64,10 @@ router.put('/:id', async (req, res, next) => {
     Object.assign(user, req.body);
     await user.save();
     
-    const populatedUser = await User.findById(user._id).populate('role');
-    res.json({ success: true, data: populatedUser });
+    const populatedUser = await User.findById(user._id).populate('roles');
+    const obj = populatedUser.toObject();
+    obj.role = populatedUser.getMergedRole();
+    res.json({ success: true, data: obj });
   } catch (error) {
     next(error);
   }

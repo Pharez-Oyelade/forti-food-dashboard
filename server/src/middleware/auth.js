@@ -20,7 +20,7 @@ export async function authenticate(req, res, next) {
 
     const decoded = jwt.verify(token, env.JWT_SECRET);
 
-    const user = await User.findById(decoded.id).populate('role');
+    const user = await User.findById(decoded.id).populate('roles');
 
     if (!user) {
       return res.status(401).json({
@@ -36,6 +36,9 @@ export async function authenticate(req, res, next) {
       });
     }
 
+    // Attach the dynamically merged role back onto req.user 
+    // so downstream RBAC middleware doesn't need to change
+    user.role = user.getMergedRole();
     req.user = user;
     next();
   } catch (err) {

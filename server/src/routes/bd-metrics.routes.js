@@ -43,13 +43,12 @@ router.get('/performance', async (req, res, next) => {
       const stats = userStats[userId];
       stats.totalDeals++;
 
-      if (pipelineAccess !== ACCESS_LEVELS.VIEW_RESTRICTED) {
-        stats.totalValue += deal.value_naira || 0;
-      } else {
-        stats.totalValue = undefined;
-      }
-
       if (deal.deal_stage === DEAL_STAGES.CLOSED_WON) {
+        if (pipelineAccess !== ACCESS_LEVELS.VIEW_RESTRICTED) {
+          stats.totalValue += deal.value_naira || 0;
+        } else {
+          stats.totalValue = undefined;
+        }
         stats.wonDeals++;
         // Rough estimation of days to close
         const createdDate = new Date(deal.createdAt);

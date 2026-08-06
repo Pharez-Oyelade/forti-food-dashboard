@@ -32,7 +32,7 @@ router.get('/summary', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) =
       if (p.status === INVENTORY_STATUS.DEPLETED || p.units_on_hand === 0) {
         depleted_count++;
       }
-      if (p.status === INVENTORY_STATUS.EXPIRY_RISK) {
+      if (p.status === INVENTORY_STATUS.EXPIRED || p.status === INVENTORY_STATUS.AT_RISK) {
         expiry_risks++;
       }
       if (p.sell_through_rate != null) {
@@ -181,53 +181,38 @@ router.get('/alerts', fieldFilter(SECTIONS.INVENTORY), async (req, res, next) =>
         });
       }
       
-      // Check batches for expiry, or fallback to root expiry_date for legacy products
-      if (product.batches && product.batches.length > 0) {
-        product.batches.forEach((batch, idx) => {
-          if (batch.units_on_hand > 0 && batch.expiry_date) {
-            const daysToExpiry = Math.ceil((new Date(batch.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
-            const batchName = batch.batch_number || `Batch ${idx + 1}`;
-            
-            if (daysToExpiry <= 0) {
-              alerts.push({
-                id: `${product._id}-expired-${idx}`,
-                type: 'EXPIRED',
-                message: `${product.product_name} (${batchName}) has EXPIRED. ${batch.units_on_hand} units remaining.`,
-                product_id: product._id
-              });
-            } else if (daysToExpiry <= 90) {
-              alerts.push({
-                id: `${product._id}-risk-${idx}`,
-                type: 'AT_RISK',
-                message: `${product.product_name} (${batchName}) expires in ${daysToExpiry} days. ${batch.units_on_hand} units at risk.`,
-                product_id: product._id
-              });
-            }
-          }
+      if (product.status === INVENTORY_STATUS.EXPIRED) {
+        alerts.push({
+          id: `${product._id}-expired`,
+          type: 'EXPIRED',
+          message: `${product.product_name} has EXPIRED. ${product.units_on_hand} units remaining.`,
+          product_id: product._id
         });
-      } else if (product.units_on_hand > 0 && product.expiry_date) {
-        // Legacy product without batches
-        const daysToExpiry = Math.ceil((new Date(product.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
-        if (daysToExpiry <= 0) {
-          alerts.push({
-            id: `${product._id}-expired`,
-            type: 'EXPIRED',
-            message: `${product.product_name} has EXPIRED. ${product.units_on_hand} units remaining.`,
-            product_id: product._id
-          });
-        } else if (daysToExpiry <= 90) {
-          alerts.push({
-            id: `${product._id}-risk`,
-            type: 'AT_RISK',
-            message: `${product.product_name} expires in ${daysToExpiry} days. ${product.units_on_hand} units at risk.`,
-            product_id: product._id
-          });
+      } else if (product.status === INVENTORY_STATUS.AT_RISK) {
+        let daysToExpiry = 999;
+        if (product.expiry_date) {
+          daysToExpiry = Math.ceil((new Date(product.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
         }
+        alerts.push({
+          id: `${product._id}-risk`,
+          type: 'AT_RISK',
+          message: `${product.product_name} expires in ${daysToExpiry} days. ${product.units_on_hand} units at risk.`,
+          product_id: product._id
+        });
+      }
+      
+      if (product.status === INVENTORY_STATUS.REORDER) {
+        alerts.push({
+          id: `${product._id}-reorder`,
+          type: 'REORDER',
+          message: `${product.product_name} (${product.sku}) is below reorder point.`,
+          product_id: product._id
+        });
       }
     });
     
-    // Sort alerts: EXPIRED first, then DEPLETED, then AT_RISK (sorted by days left if possible, but standard type sort is fine)
-    const typeOrder = { EXPIRED: 1, DEPLETED: 2, AT_RISK: 3 };
+    // Sort alerts: EXPIRED first, then DEPLETED, then REORDER, then AT_RISK
+    const typeOrder = { EXPIRED: 1, DEPLETED: 2, REORDER: 3, AT_RISK: 4 };
     alerts.sort((a, b) => typeOrder[a.type] - typeOrder[b.type]);
     
     res.json({ success: true, data: alerts });

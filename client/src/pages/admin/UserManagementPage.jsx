@@ -17,7 +17,7 @@ export default function UserManagementPage() {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "",
+    roles: [],
     is_active: true,
     password: "", // Only used for creating or explicitly changing
   });
@@ -48,7 +48,7 @@ export default function UserManagementPage() {
       setFormData({
         name: user.name,
         email: user.email,
-        role: user.role?._id || "",
+        roles: user.roles ? user.roles.map((r) => r._id) : [],
         is_active: user.is_active,
         password: "",
       });
@@ -57,7 +57,7 @@ export default function UserManagementPage() {
       setFormData({
         name: "",
         email: "",
-        role: roles.length > 0 ? roles[0]._id : "",
+        roles: [],
         is_active: true,
         password: "",
       });
@@ -121,18 +121,16 @@ export default function UserManagementPage() {
           <Button
             variant="danger"
             onClick={handlePurgeStalledDeals}
-            className="flex items-center gap-2"
+            icon={AlertOctagon}
           >
-            <AlertOctagon size={16} />
             Purge Stalled Deals
           </Button>
           <Button
             variant="primary"
             onClick={() => handleOpenModal()}
-            className="flex items-center gap-2"
+            icon={Plus}
           >
-            <Plus size={16} />
-            <span>Add User</span>
+            Add User
           </Button>
         </div>
       </div>
@@ -149,7 +147,7 @@ export default function UserManagementPage() {
                   Email
                 </th>
                 <th className="p-4 text-sm font-semibold text-slate-300">
-                  Role
+                  Roles
                 </th>
                 <th className="p-4 text-sm font-semibold text-slate-300">
                   Status
@@ -251,26 +249,32 @@ export default function UserManagementPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm text-slate-400 mb-1">
-                  Role
+                <label className="block text-sm text-slate-400 mb-2">
+                  Assigned Roles
                 </label>
-                <select
-                  required
-                  className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
-                  value={formData.role}
-                  onChange={(e) =>
-                    setFormData({ ...formData, role: e.target.value })
-                  }
-                >
-                  <option value="" disabled>
-                    Select a role
-                  </option>
+                <div className="grid grid-cols-2 gap-3 max-h-48 overflow-y-auto p-2 bg-slate-800 border border-slate-700 rounded-lg">
                   {roles.map((r) => (
-                    <option key={r._id} value={r._id}>
-                      {r.role_name}
-                    </option>
+                    <label key={r._id} className="flex items-center gap-2 cursor-pointer group">
+                      <input
+                        type="checkbox"
+                        className="form-checkbox h-4 w-4 text-brand-lime rounded border-slate-600 bg-slate-700 checked:bg-brand-lime"
+                        checked={formData.roles.includes(r._id)}
+                        onChange={(e) => {
+                          const isChecked = e.target.checked;
+                          setFormData((prev) => ({
+                            ...prev,
+                            roles: isChecked
+                              ? [...prev.roles, r._id]
+                              : prev.roles.filter((id) => id !== r._id),
+                          }));
+                        }}
+                      />
+                      <span className="text-sm text-slate-300 group-hover:text-slate-100 transition-colors">
+                        {r.role_name}
+                      </span>
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
               <div className="flex items-center gap-3 pt-2">
                 <input

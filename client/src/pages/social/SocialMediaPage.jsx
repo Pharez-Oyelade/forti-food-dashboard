@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { get, post, put, del } from "@/services/api";
 import { Card, Button, LoadingSpinner } from "@/components/common";
 import { Plus, Edit2, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { toast } from "react-toastify";
+import { SECTIONS } from "../../../../shared/constants";
 
 export default function SocialMediaPage() {
+  const { canWrite, canDelete } = useAuth();
   const [metrics, setMetrics] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -123,17 +126,18 @@ export default function SocialMediaPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between gap-3 md:items-center">
-        <h1 className="text-2xl font-semibold text-slate-100">
-          Instagram Marketing Performance
-        </h1>
-        <Button
-          variant="primary"
-          icon={Plus}
-          onClick={() => handleOpenModal()}
-        >
-          Log Weekly Metrics
-        </Button>
+      <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-100">Social Media Tracker</h1>
+          <p className="text-sm text-slate-400">Weekly performance and engagement metrics</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {canWrite(SECTIONS.SOCIAL) && (
+            <Button variant="primary" icon={Plus} onClick={() => handleOpenModal()}>
+              Log Metrics
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* KPI Cards */}
@@ -223,18 +227,22 @@ export default function SocialMediaPage() {
                   <td className="p-3 text-right text-blue-400">{m.engagement_rate}%</td>
                   <td className="p-3 text-center text-slate-400">{m.posts_published} / {m.stories_published}</td>
                   <td className="p-3 text-right space-x-2">
-                    <button
-                      onClick={() => handleOpenModal(m)}
-                      className="text-slate-400 hover:text-brand-lime transition-colors"
-                    >
-                      <Edit2 size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(m._id)}
-                      className="text-slate-400 hover:text-red-500 transition-colors"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    {canWrite(SECTIONS.SOCIAL) && (
+                      <button
+                        onClick={() => handleOpenModal(m)}
+                        className="text-slate-400 hover:text-brand-lime transition-colors"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                    )}
+                    {canDelete(SECTIONS.SOCIAL) && (
+                      <button
+                        onClick={() => handleDelete(m._id)}
+                        className="text-slate-400 hover:text-red-500 transition-colors"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))

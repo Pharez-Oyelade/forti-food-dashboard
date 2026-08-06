@@ -24,11 +24,13 @@ const userSchema = new mongoose.Schema(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false, // never returned in queries by default
     },
-    role: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Role',
-      required: [true, 'Role is required'],
-    },
+    roles: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Role',
+        required: [true, 'At least one role is required'],
+      },
+    ],
     is_active: {
       type: Boolean,
       default: true,
@@ -56,6 +58,54 @@ userSchema.pre('save', async function (next) {
  */
 userSchema.methods.comparePassword = async function (candidate) {
   return bcrypt.compare(candidate, this.password);
+};
+
+/**
+ * Merge permissions from multiple populated roles.
+ * Returns a virtual 'role' object that the frontend and middleware can use.
+ */
+userSchema.methods.getMergedRole = function () {
+  if (!this.roles || this.roles.length === 0) return null;
+  
+  // If only one role, just return it for simplicity
+  if (this.roles.length === 1 && this.roles[0].permissions) {
+    return this.roles[0];
+  }
+
+  const hierarchy = [
+    'none',
+    'view_restricted',
+    'view_own',
+    'view',
+    'edit_own',
+    'edit_rules',
+    'edit',
+    'full'
+  ];
+
+  const mergedPermissions = {};
+
+  for (const role of this.roles) {
+    if (!role.permissions) continue;
+    
+    for (const [section, perm] of Object.entries(role.permissions)) {
+      const currentAccess = mergedPermissions[section]?.access || 'none';
+      const newAccess = perm.access || 'none';
+      
+      const currentIdx = hierarchy.indexOf(currentAccess);
+      const newIdx = hierarchy.indexOf(newAccess);
+      
+      if (newIdx > currentIdx) {
+        mergedPermissions[section] = { access: newAccess };
+      }
+    }
+  }
+
+  return {
+    _id: this.roles[0]._id, // Use primary role ID
+    role_name: this.roles.map(r => r.role_name).join(' + '),
+    permissions: mergedPermissions
+  };
 };
 
 const User = mongoose.model('User', userSchema);

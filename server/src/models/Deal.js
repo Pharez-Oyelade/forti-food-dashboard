@@ -4,7 +4,7 @@ import { DEAL_STAGES, RAG_STATUS, FORECAST_CATEGORIES } from '../../../shared/co
 const dealSchema = new mongoose.Schema(
   {
     deal_name: { type: String, required: true },
-    company: { type: String, required: true },
+    company: { type: String },
     contact_person: { type: String },
     contact_email: { type: String },
     contact_phone: { type: String },

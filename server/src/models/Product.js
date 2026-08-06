@@ -66,11 +66,13 @@ productSchema.virtual('weeks_of_cover').get(function () {
 
 // Pre-validate hook for pricing rules
 productSchema.pre('validate', function (next) {
-  if (this.meal_type === 'Single-SKU' && this.unit_price < 2800) {
-    this.invalidate('unit_price', 'Single-SKU meals must have a minimum price of ₦2,800.');
-  }
-  if (this.meal_type === 'Two-Component' && this.unit_price < 5600) {
-    this.invalidate('unit_price', 'Two-Component meals must have a minimum price of ₦5,600.');
+  if (this.isModified('unit_price') || this.isModified('meal_type') || this.isNew) {
+    if (this.meal_type === 'Single-SKU' && this.unit_price < 2800) {
+      this.invalidate('unit_price', 'Single-SKU meals must have a minimum price of ₦2,800.');
+    }
+    if (this.meal_type === 'Two-Component' && this.unit_price < 5600) {
+      this.invalidate('unit_price', 'Two-Component meals must have a minimum price of ₦5,600.');
+    }
   }
   next();
 });
@@ -101,8 +103,12 @@ productSchema.pre('save', function (next) {
 
     if (this.units_on_hand === 0) {
       this.status = INVENTORY_STATUS.DEPLETED;
-    } else if (isExpiryRisk) {
-      this.status = INVENTORY_STATUS.EXPIRY_RISK;
+    } else if (this.category === 'Food' && this.expiry_date && (this.expiry_date - new Date()) < 0) {
+      this.status = INVENTORY_STATUS.EXPIRED;
+    } else if (this.category === 'Food' && isExpiryRisk) {
+      this.status = INVENTORY_STATUS.AT_RISK;
+    } else if (this.units_on_hand <= (this.reorder_point || 100)) {
+      this.status = INVENTORY_STATUS.REORDER;
     } else if (this.sell_through_rate < 10 && this.units_on_hand > 0) {
       this.status = INVENTORY_STATUS.SLOW_MOVER;
     } else {

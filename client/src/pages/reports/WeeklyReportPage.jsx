@@ -140,6 +140,76 @@ export default function WeeklyReportPage() {
             </div>
           </section>
         )}
+
+        {canRead(SECTIONS.MEALMATE) && report.programs && (
+          <section>
+            <h2 className="text-xl font-semibold text-brand-lime mb-4 print:text-brand-dark border-b border-slate-700 pb-2">
+              Programs (Meal Mate)
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="print:border print:border-gray-300 print:shadow-none">
+                <div className="text-sm text-slate-400 print:text-gray-500">
+                  Meals Delivered
+                </div>
+                <div className="text-2xl font-bold text-slate-100 print:text-black">
+                  {report.programs.meals_delivered.toLocaleString()}
+                </div>
+              </Card>
+              <Card className="print:border print:border-gray-300 print:shadow-none">
+                <div className="text-sm text-slate-400 print:text-gray-500">
+                  Active Schools
+                </div>
+                <div className="text-2xl font-bold text-emerald-400 print:text-emerald-700">
+                  {report.programs.active_schools}
+                </div>
+              </Card>
+            </div>
+          </section>
+        )}
+
+        {canRead(SECTIONS.SOCIAL) && report.social && (
+          <section>
+            <h2 className="text-xl font-semibold text-brand-lime mb-4 print:text-brand-dark border-b border-slate-700 pb-2">
+              Social Media Engagement
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="print:border print:border-gray-300 print:shadow-none">
+                <div className="text-sm text-slate-400 print:text-gray-500">
+                  Current Engagement Rate
+                </div>
+                <div className="text-2xl font-bold text-slate-100 print:text-black">
+                  {report.social.engagement_rate}%
+                </div>
+              </Card>
+              <Card className="print:border print:border-gray-300 print:shadow-none">
+                <div className="text-sm text-slate-400 print:text-gray-500">
+                  WoW Delta
+                </div>
+                <div className={`text-2xl font-bold ${report.social.engagement_delta >= 0 ? "text-emerald-400 print:text-emerald-700" : "text-red-500 print:text-red-700"}`}>
+                  {report.social.engagement_delta > 0 ? "+" : ""}{report.social.engagement_delta.toFixed(2)}%
+                </div>
+              </Card>
+            </div>
+          </section>
+        )}
+
+        {canRead(SECTIONS.BUSINESS_GAPS) && report.gaps && (
+          <section>
+            <h2 className="text-xl font-semibold text-brand-lime mb-4 print:text-brand-dark border-b border-slate-700 pb-2">
+              Business Gaps
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card className="print:border print:border-gray-300 print:shadow-none">
+                <div className="text-sm text-slate-400 print:text-gray-500">
+                  Open Action Items
+                </div>
+                <div className="text-2xl font-bold text-amber-500 print:text-amber-700">
+                  {report.gaps.open_count}
+                </div>
+              </Card>
+            </div>
+          </section>
+        )}
       </div>
 
       <style>{`

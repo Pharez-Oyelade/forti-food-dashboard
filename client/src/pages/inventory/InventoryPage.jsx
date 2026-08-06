@@ -256,9 +256,8 @@ export default function InventoryPage() {
             {products
               .filter(
                 (p) =>
-                  p.status === INVENTORY_STATUS.EXPIRY_RISK ||
-                  (p.units_on_hand > 5000 &&
-                    p.product_name.includes("Chicken")),
+                  p.status === INVENTORY_STATUS.AT_RISK ||
+                  p.status === INVENTORY_STATUS.EXPIRED,
               )
               .map((p) => (
                 <li key={p._id}>
@@ -273,7 +272,7 @@ export default function InventoryPage() {
       )}
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card title="Total SKUs">
           <div className="text-3xl font-bold text-brand-lime">
             {summary?.total_skus || 0}
@@ -614,7 +613,9 @@ export default function InventoryPage() {
                     }
                   >
                     <option value="Single-SKU">Single-SKU (Min ₦2,800)</option>
-                    <option value="Two-Component">Two-Component (Min ₦5,600)</option>
+                    <option value="Two-Component">
+                      Two-Component (Min ₦5,600)
+                    </option>
                     <option value="Other">Other</option>
                   </select>
                 </div>
@@ -656,7 +657,13 @@ export default function InventoryPage() {
                   </label>
                   <input
                     type="number"
-                    min={formData.meal_type === "Two-Component" ? 5600 : formData.meal_type === "Single-SKU" ? 2800 : 0}
+                    min={
+                      formData.meal_type === "Two-Component"
+                        ? 5600
+                        : formData.meal_type === "Single-SKU"
+                          ? 2800
+                          : 0
+                    }
                     className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
                     value={formData.unit_price}
                     onChange={(e) =>
