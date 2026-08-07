@@ -69,40 +69,52 @@ router.get('/movements', fieldFilter(SECTIONS.INVENTORY), async (req, res, next)
 // Create Inventory Movement
 router.post('/movements', authorize(SECTIONS.INVENTORY, ACCESS_LEVELS.EDIT), async (req, res, next) => {
   try {
-    const movement = await InventoryMovement.create(req.body);
-    // Also update the product stock implicitly
-    const product = await Product.findById(movement.product);
-    if (product) {
-      if (movement.type === 'SALE' || movement.type === 'DEMO' || movement.type === 'MARKETING' || movement.type === 'REGULATORY') {
-        product.units_on_hand -= movement.quantity;
-        if (movement.type === 'SALE') {
-          product.units_sold_to_date += movement.quantity;
-        }
+    const product = await Product.findById(req.body.product);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const type = req.body.type;
+    const qty = req.body.quantity;
+
+    if (type === 'SALE' || type === 'DEMO' || type === 'MARKETING' || type === 'REGULATORY') {
+      if (product.units_on_hand < qty) {
+        return res.status(400).json({ success: false, message: 'Insufficient stock on hand for this movement.' });
+      }
+      product.units_on_hand -= qty;
+      if (type === 'SALE') {
+        product.units_sold_to_date += qty;
+      }
+      
+      // FIFO Batch Deduction
+      if (product.batches && product.batches.length > 0) {
+        let remainingToDeduct = qty;
+        // Sort by earliest expiry
+        product.batches.sort((a, b) => {
+          if (!a.expiry_date) return 1;
+          if (!b.expiry_date) return -1;
+          return new Date(a.expiry_date) - new Date(b.expiry_date);
+        });
         
-        // FIFO Batch Deduction
-        if (product.batches && product.batches.length > 0) {
-          let remainingToDeduct = movement.quantity;
-          // Sort by earliest expiry
-          product.batches.sort((a, b) => {
-            if (!a.expiry_date) return 1;
-            if (!b.expiry_date) return -1;
-            return new Date(a.expiry_date) - new Date(b.expiry_date);
-          });
-          
-          for (let batch of product.batches) {
-            if (remainingToDeduct <= 0) break;
-            if (batch.units_on_hand > 0) {
-              const deduct = Math.min(batch.units_on_hand, remainingToDeduct);
-              batch.units_on_hand -= deduct;
-              remainingToDeduct -= deduct;
-            }
+        for (let batch of product.batches) {
+          if (remainingToDeduct <= 0) break;
+          if (batch.units_on_hand > 0) {
+            const deduct = Math.min(batch.units_on_hand, remainingToDeduct);
+            batch.units_on_hand -= deduct;
+            remainingToDeduct -= deduct;
           }
         }
-      } else if (movement.type === 'RETURN') {
-        product.units_on_hand += movement.quantity;
       }
-      await product.save();
+    } else if (type === 'RETURN') {
+      product.units_on_hand += qty;
     }
+    
+    // Save the product first
+    await product.save();
+    
+    // Create the movement now that stock is confirmed
+    const movement = await InventoryMovement.create(req.body);
+    
     res.status(201).json({ success: true, data: movement });
   } catch (error) {
     next(error);
