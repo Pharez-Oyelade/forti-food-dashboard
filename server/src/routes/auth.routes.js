@@ -68,7 +68,7 @@ router.post('/login', validate(loginSchema), async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Logged in successfully.',
-      data: { user: profile },
+      data: { user: profile, token },
     });
   } catch (err) {
     next(err);

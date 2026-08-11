@@ -41,6 +41,9 @@ export function AuthProvider({ children }) {
   const login = useCallback(
     async (email, password) => {
       const data = await post('/auth/login', { email, password });
+      if (data.data.token) {
+        localStorage.setItem('auth_token', data.data.token);
+      }
       setUser(data.data.user);
       navigate('/app/dashboard');
       return data;
@@ -54,6 +57,7 @@ export function AuthProvider({ children }) {
     } catch {
       // Even if the server call fails, clear local state
     }
+    localStorage.removeItem('auth_token');
     setUser(null);
     navigate('/login');
   }, [navigate]);

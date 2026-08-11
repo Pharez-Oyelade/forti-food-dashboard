@@ -8,6 +8,18 @@ const api = axios.create({
   },
 });
 
+// Request interceptor — attach token from localStorage
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 // Response interceptor — redirect on 401
 api.interceptors.response.use(
   (response) => response,
