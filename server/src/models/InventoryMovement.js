@@ -12,6 +12,7 @@ const inventoryMovementSchema = new mongoose.Schema(
     },
     person: { type: String },
     batch_number: { type: String },
+    invoice_link: { type: String },
     notes: { type: String },
   },
   {

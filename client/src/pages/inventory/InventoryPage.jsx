@@ -47,6 +47,7 @@ export default function InventoryPage() {
     type: "SALE",
     person: "",
     batch_number: "",
+    invoice_link: "",
     notes: "",
   });
 
@@ -230,6 +231,7 @@ export default function InventoryPage() {
                   type: "SALE",
                   person: "",
                   batch_number: "",
+                  invoice_link: "",
                   notes: "",
                 });
                 setIsMovementModalOpen(true);
@@ -521,6 +523,7 @@ export default function InventoryPage() {
                 <th className="p-3 text-right">Quantity</th>
                 <th className="p-3">Person/Entity</th>
                 <th className="p-3">Batch</th>
+                <th className="p-3">Invoice</th>
               </tr>
             </thead>
             <tbody>
@@ -557,6 +560,20 @@ export default function InventoryPage() {
                     </td>
                     <td className="p-3 text-slate-400">
                       {movement.batch_number || "-"}
+                    </td>
+                    <td className="p-3 text-slate-400">
+                      {movement.invoice_link ? (
+                        <a
+                          href={movement.invoice_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-brand-lime hover:underline"
+                        >
+                          View
+                        </a>
+                      ) : (
+                        "-"
+                      )}
                     </td>
                   </tr>
                 ))
@@ -885,6 +902,23 @@ export default function InventoryPage() {
                       setMovementFormData({
                         ...movementFormData,
                         batch_number: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Invoice Link (Optional)
+                  </label>
+                  <input
+                    type="url"
+                    className="w-full bg-slate-800 border border-slate-700 rounded-lg p-2 text-slate-200 focus:border-brand-lime focus:outline-none"
+                    placeholder="https://..."
+                    value={movementFormData.invoice_link}
+                    onChange={(e) =>
+                      setMovementFormData({
+                        ...movementFormData,
+                        invoice_link: e.target.value,
                       })
                     }
                   />
