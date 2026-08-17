@@ -73,9 +73,20 @@ export const generateWeeklySnapshot = async () => {
     // 5. Gaps
     const openGapsCount = await BusinessGap.countDocuments({ status: { $ne: "RESOLVED" } });
 
-    // Create Snapshot
-    const snapshot = await WeeklySnapshot.create({
-      week_ending: new Date(),
+    // Calculate the week boundary (Monday 00:00 to Sunday 23:59)
+    const now = new Date();
+    const dayOfWeek = now.getDay(); // 0=Sun, 1=Mon, ...
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() + mondayOffset);
+    weekStart.setHours(0, 0, 0, 0);
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 6);
+    weekEnd.setHours(23, 59, 59, 999);
+
+    const snapshotData = {
+      week_ending: now,
       pipeline: {
         total_deals: pipelineData[0]?.total_deals || 0,
         total_value: pipelineData[0]?.total_value || 0,
@@ -98,7 +109,14 @@ export const generateWeeklySnapshot = async () => {
       gaps: {
         open_count: openGapsCount,
       }
-    });
+    };
+
+    // Upsert: update if a snapshot already exists for this week, otherwise create
+    const snapshot = await WeeklySnapshot.findOneAndUpdate(
+      { week_ending: { $gte: weekStart, $lte: weekEnd } },
+      { $set: snapshotData },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
 
     console.log('[Snapshot Service] Weekly snapshot generated successfully.');
     return snapshot;

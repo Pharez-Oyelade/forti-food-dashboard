@@ -1,35 +1,47 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { LayoutDashboard, AlertTriangle, AlertOctagon, PackageX, PackageMinus, ChevronDown, ChevronUp, BellRing, Target, TrendingUp, TrendingDown, DollarSign, Users, Briefcase, Activity } from "lucide-react";
+import { LayoutDashboard, AlertTriangle, AlertOctagon, PackageX, PackageMinus, ChevronDown, ChevronUp, BellRing, Target, TrendingUp, TrendingDown, DollarSign, Users, Briefcase, Activity, BarChart3, Camera } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
-import { get } from "@/services/api";
-import { Card, LoadingSpinner } from "@/components/common";
+import { get, post } from "@/services/api";
+import { Card, Button, LoadingSpinner } from "@/components/common";
+import { SECTIONS } from "../../../../shared/constants";
+import { toast } from "react-toastify";
 import BDPerformanceCard from "@/components/dashboard/BDPerformanceCard";
+import DashboardTimeline from "@/components/dashboard/DashboardTimeline";
 
 export default function DashboardHome() {
-  const { user } = useAuth();
+  const { user, canWrite } = useAuth();
   const [alerts, setAlerts] = useState([]);
   const [loadingAlerts, setLoadingAlerts] = useState(true);
   const [isAlertsExpanded, setIsAlertsExpanded] = useState(false);
+  const [snapshotting, setSnapshotting] = useState(false);
   
   const [summary, setSummary] = useState(null);
   const [loadingSummary, setLoadingSummary] = useState(true);
 
+  const [timeline, setTimeline] = useState(null);
+  const [loadingTimeline, setLoadingTimeline] = useState(true);
+
+  const [activeTab, setActiveTab] = useState("operations");
+
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        const [alertsRes, summaryRes] = await Promise.all([
+        const [alertsRes, summaryRes, timelineRes] = await Promise.all([
           get("/products/alerts").catch(() => ({ success: false, data: [] })),
-          get("/dashboard/summary").catch(() => ({ success: false, data: null }))
+          get("/dashboard/summary").catch(() => ({ success: false, data: null })),
+          get("/dashboard/timeline").catch(() => ({ success: false, data: null })),
         ]);
         
         if (alertsRes.success) setAlerts(alertsRes.data);
         if (summaryRes.success) setSummary(summaryRes.data);
+        if (timelineRes.success) setTimeline(timelineRes.data);
       } catch (err) {
         console.error("Failed to fetch dashboard data:", err);
       } finally {
         setLoadingAlerts(false);
         setLoadingSummary(false);
+        setLoadingTimeline(false);
       }
     };
     fetchDashboardData();
@@ -186,29 +198,94 @@ export default function DashboardHome() {
         </div>
       )}
 
-      {/* Advanced Views */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-4">
-        <div>
-          <BDPerformanceCard />
+      {/* Tabbed Section */}
+      <div className="mt-2">
+        {/* Tab Headers */}
+        <div className="flex border-b border-slate-700">
+          <button
+            onClick={() => setActiveTab("operations")}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all border-b-2 ${
+              activeTab === "operations"
+                ? "border-brand-lime text-brand-lime"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <Activity size={16} />
+            Operational Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("timeline")}
+            className={`flex items-center gap-2 px-5 py-3 text-sm font-medium transition-all border-b-2 ${
+              activeTab === "timeline"
+                ? "border-brand-lime text-brand-lime"
+                : "border-transparent text-slate-400 hover:text-slate-200"
+            }`}
+          >
+            <BarChart3 size={16} />
+            Historical Trends
+          </button>
         </div>
-        
-        <div className="flex flex-col gap-6">
-          <Card title="Meals Delivered (Meal Mate)" className="h-full flex flex-col justify-center">
-            <div className="flex items-center justify-between">
+
+        {/* Tab Content */}
+        <div className="mt-6">
+          {activeTab === "operations" && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
-                <p className="text-sm text-slate-400 mb-1">Total Impact</p>
-                <div className="text-4xl font-bold text-brand-lime">
-                  {summary?.programs?.meals_delivered?.toLocaleString() || 0}
-                </div>
-                <p className="text-xs text-slate-500 mt-2">
-                  Across {summary?.programs?.active_schools || 0} active schools
-                </p>
+                <BDPerformanceCard />
               </div>
-              <div className="w-24 h-24 rounded-full border-8 border-brand-lime/20 flex items-center justify-center">
-                <Users size={32} className="text-brand-lime" />
+              
+              <div className="flex flex-col gap-6">
+                <Card title="Meals Delivered (Meal Mate)" className="h-full flex flex-col justify-center">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-400 mb-1">Total Impact</p>
+                      <div className="text-4xl font-bold text-brand-lime">
+                        {summary?.programs?.meals_delivered?.toLocaleString() || 0}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-2">
+                        Across {summary?.programs?.active_schools || 0} active schools
+                      </p>
+                    </div>
+                    <div className="w-24 h-24 rounded-full border-8 border-brand-lime/20 flex items-center justify-center">
+                      <Users size={32} className="text-brand-lime" />
+                    </div>
+                  </div>
+                </Card>
               </div>
             </div>
-          </Card>
+          )}
+
+          {activeTab === "timeline" && (
+            <>
+              {canWrite(SECTIONS.USER_MGMT) && (
+                <div className="flex justify-end mb-4">
+                  <Button
+                    variant="secondary"
+                    icon={Camera}
+                    disabled={snapshotting}
+                    onClick={async () => {
+                      try {
+                        setSnapshotting(true);
+                        const res = await post("/dashboard/snapshot");
+                        if (res.success) {
+                          toast.success("Snapshot captured! Refreshing timeline…");
+                          const timelineRes = await get("/dashboard/timeline").catch(() => ({ success: false }));
+                          if (timelineRes.success) setTimeline(timelineRes.data);
+                        }
+                      } catch (err) {
+                        toast.error(err?.response?.data?.message || "Failed to capture snapshot");
+                      } finally {
+                        setSnapshotting(false);
+                      }
+                    }}
+                  >
+                    {snapshotting ? "Capturing…" : "Take Snapshot"}
+                  </Button>
+                </div>
+              )}
+              <DashboardTimeline timeline={timeline} loading={loadingTimeline} />
+            </>
+          )}
         </div>
       </div>
     </div>
