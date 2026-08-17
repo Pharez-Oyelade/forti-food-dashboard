@@ -28,7 +28,7 @@ export default function TopBar({ title, collapsed, onMobileToggle }) {
             {user?.name}
           </span>
           {user?.role?.role_name && (
-            <StatusBadge status={user.role.role_name} type="role" size="sm" />
+            <StatusBadge status={user.role.role_name} type="role" size="sm" className="max-w-[120px] md:max-w-[200px]" />
           )}
         </div>
 

@@ -71,8 +71,8 @@ export default function StatusBadge({
 
   return (
     <span className={classNames}>
-      <span className={`rounded-full ${dotColors[color]} ${dotSizes[size]}`} />
-      <span>{status}</span>
+      <span className={`rounded-full flex-shrink-0 ${dotColors[color]} ${dotSizes[size]}`} />
+      <span className="truncate">{status}</span>
     </span>
   );
 }
