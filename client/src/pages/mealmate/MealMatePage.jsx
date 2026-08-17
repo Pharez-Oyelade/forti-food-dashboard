@@ -16,8 +16,12 @@ export default function MealMatePage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [activeTab, setActiveTab] = useState("Operations");
-  const [displayCurrency, setDisplayCurrency] = useState("USD");
+  const [displayCurrency, setDisplayCurrency] = useState(() => localStorage.getItem("mealMateCurrency") || "USD");
   const [exchangeRate, setExchangeRate] = useState(1500);
+
+  useEffect(() => {
+    localStorage.setItem("mealMateCurrency", displayCurrency);
+  }, [displayCurrency]);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,16 +39,20 @@ export default function MealMatePage() {
   const fetchSchools = async () => {
     try {
       setLoading(true);
-      const [schoolsRes, summaryRes, fundingRes, subsRes] = await Promise.all([
+      const [schoolsRes, summaryRes, fundingRes, subsRes, settingsRes] = await Promise.all([
         get("/schools"),
         get("/schools/summary"),
         get("/mealmate/funding/summary"),
         get("/mealmate/subscribers"),
+        get("/settings?key=mealmate_exchange_rate").catch(() => ({ data: null })),
       ]);
       setSchools(schoolsRes.data || []);
       setSummary(summaryRes.data || null);
       setFundingSummary(fundingRes.data || null);
       setSubscribers(subsRes.data || []);
+      if (settingsRes?.data) {
+        setExchangeRate(Number(settingsRes.data) || 1500);
+      }
     } catch (err) {
       toast.error("Failed to load schools");
     } finally {
@@ -355,8 +363,8 @@ export default function MealMatePage() {
         </>
       ) : (
         <>
-          <div className="flex justify-between items-center mb-6">
-            <div className="flex items-center space-x-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-4">
               <div className="flex space-x-2">
                 <button
                   onClick={() => setDisplayCurrency("USD")}
@@ -389,19 +397,30 @@ export default function MealMatePage() {
                   onChange={(e) =>
                     setExchangeRate(Number(e.target.value) || 1500)
                   }
+                  onBlur={async () => {
+                    try {
+                      await put("/settings/mealmate_exchange_rate", { value: exchangeRate });
+                      toast.success("Exchange rate updated globally");
+                    } catch (err) {
+                      toast.error("Failed to update global exchange rate");
+                    }
+                  }}
                   className="bg-transparent text-sm text-slate-200 w-16 outline-none focus:text-brand-lime"
                 />
               </div>
             </div>
 
-            <Button
-              variant="secondary"
-              icon={RefreshCw}
-              onClick={handleSyncPayments}
-              disabled={syncing}
-            >
-              {syncing ? "Syncing..." : "Sync Stripe/Paystack"}
-            </Button>
+            <div className="w-full md:w-auto">
+              <Button
+                variant="secondary"
+                icon={RefreshCw}
+                onClick={handleSyncPayments}
+                disabled={syncing}
+                className="w-full md:w-auto justify-center"
+              >
+                {syncing ? "Syncing..." : "Sync Stripe/Paystack"}
+              </Button>
+            </div>
           </div>
 
           {/* Funding KPI Cards */}

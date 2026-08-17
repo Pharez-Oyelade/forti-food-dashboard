@@ -31,6 +31,7 @@ import importRoutes from "./routes/import.routes.js";
 import gapRoutes from "./routes/gap.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import mealmateRoutes from "./routes/mealmate.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 
 // ── Initialise Express ──
 const app = express();
@@ -71,6 +72,7 @@ app.use("/api/v1/import", importRoutes);
 app.use("/api/v1/gaps", gapRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/mealmate", mealmateRoutes);
+app.use("/api/v1/settings", settingsRoutes);
 
 // ── Global Error Handler ──
 app.use(errorHandler);
