@@ -4,10 +4,6 @@ import dns from "dns";
 
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
-/**
- * Connect to MongoDB with retry logic.
- * Retries up to `maxRetries` times with a delay between attempts.
- */
 async function connectDB({ maxRetries = 5, retryDelay = 5000 } = {}) {
   let attempt = 0;
 
