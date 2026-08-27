@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { get, post, put, del } from "@/services/api";
-import { Card, Button, StatusBadge, LoadingSpinner } from "@/components/common";
+import { Card, Button, StatusBadge, LoadingSpinner, ImportWizard } from "@/components/common";
 import { INVENTORY_STATUS, SECTIONS } from "../../../../shared/constants";
 import {
   Plus,
@@ -23,8 +23,8 @@ export default function InventoryPage() {
   const [movements, setMovements] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [formData, setFormData] = useState({
     product_name: "",
@@ -51,8 +51,7 @@ export default function InventoryPage() {
     notes: "",
   });
 
-  // Restock modal state
-  const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
+    const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
   const [restockProductId, setRestockProductId] = useState(null);
   const [restockFormData, setRestockFormData] = useState({
     batch_number: "",
@@ -60,8 +59,7 @@ export default function InventoryPage() {
     expiry_date: "",
   });
 
-  // Expanded batch rows
-  const [expandedProduct, setExpandedProduct] = useState(null);
+    const [expandedProduct, setExpandedProduct] = useState(null);
 
   const fetchProducts = async () => {
     try {
@@ -223,6 +221,13 @@ export default function InventoryPage() {
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Button
               variant="secondary"
+              icon={Upload}
+              onClick={() => setIsImportWizardOpen(true)}
+            >
+              Import
+            </Button>
+            <Button
+              variant="secondary"
               icon={Activity}
               onClick={() => {
                 setMovementFormData({
@@ -249,6 +254,14 @@ export default function InventoryPage() {
           </div>
         )}
       </div>
+
+      <ImportWizard
+        isOpen={isImportWizardOpen}
+        onClose={() => setIsImportWizardOpen(false)}
+        importType="INVENTORY"
+        title="Import Inventory"
+        onImportSuccess={fetchProducts}
+      />
 
       {/* Priority Alerts */}
       {summary?.expiry_risks > 0 && (

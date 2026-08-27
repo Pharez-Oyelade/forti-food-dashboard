@@ -1,51 +1,28 @@
-import { FIELD_RESTRICTIONS, isRestricted } from "../../../shared/constants.js";
+import { FIELD_RESTRICTIONS, isRestricted } from '../../../shared/constants.js';
 
 /**
- * Middleware to strip restricted fields from the response
- * if the user has a 'view_restricted' access level for the current section.
- *
+ * fieldFilter(section)
+ * Response middleware that strips restricted fields from JSON responses
+ * when the user's access level for the section is 'view_restricted'.
  */
 export const fieldFilter = (section) => (req, res, next) => {
-  const originalJson = res.json;
+  if (!isRestricted(req.accessLevel)) return next();
 
-  res.json = function (data) {
-    if (isRestricted(req.accessLevel)) {
-      const restrictedFields = FIELD_RESTRICTIONS[section] || [];
+  const restrictedFields = FIELD_RESTRICTIONS[section] ?? [];
+  const originalJson = res.json.bind(res);
 
-      const stripFields = (obj) => {
-        if (!obj || typeof obj !== "object") return obj;
+  const strip = (obj) => {
+    if (!obj || typeof obj !== 'object') return obj;
+    const plain = typeof obj.toObject === 'function' ? obj.toObject() : { ...obj };
+    for (const field of restrictedFields) delete plain[field];
+    return plain;
+  };
 
-        // Handle Mongoose documents
-        if (typeof obj.toObject === "function") {
-          obj = obj.toObject();
-        }
-
-        const newObj = { ...obj };
-        for (const field of restrictedFields) {
-          delete newObj[field];
-        }
-        return newObj;
-      };
-
-      if (data && data.success && data.data) {
-        if (Array.isArray(data.data)) {
-          data.data = data.data.map(stripFields);
-        } else {
-          data.data = stripFields(data.data);
-        }
-      } else if (data && !data.success && data.data === undefined) {
-      } else {
-        // Fallback if data isn't wrapped in { success, data }
-        if (Array.isArray(data)) {
-          data = data.map(stripFields);
-        } else {
-          data = stripFields(data);
-        }
-      }
+  res.json = (data) => {
+    if (data?.success && data?.data) {
+      data.data = Array.isArray(data.data) ? data.data.map(strip) : strip(data.data);
     }
-
-    // Call the original res.json
-    return originalJson.call(this, data);
+    return originalJson(data);
   };
 
   next();

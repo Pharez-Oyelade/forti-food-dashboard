@@ -111,12 +111,14 @@ export const generateWeeklySnapshot = async () => {
       }
     };
 
-    // Upsert: update if a snapshot already exists for this week, otherwise create
-    const snapshot = await WeeklySnapshot.findOneAndUpdate(
-      { week_ending: { $gte: weekStart, $lte: weekEnd } },
-      { $set: snapshotData },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
-    );
+    // Update if a snapshot already exists for this week, otherwise create
+    let snapshot = await WeeklySnapshot.findOne({ week_ending: { $gte: weekStart, $lte: weekEnd } });
+    if (snapshot) {
+      Object.assign(snapshot, snapshotData);
+      await snapshot.save();
+    } else {
+      snapshot = await WeeklySnapshot.create(snapshotData);
+    }
 
     console.log('[Snapshot Service] Weekly snapshot generated successfully.');
     return snapshot;

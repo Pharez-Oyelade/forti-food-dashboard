@@ -12,8 +12,7 @@ const env = {
   NODE_ENV: process.env.NODE_ENV || "development",
 
   // Database
-  MONGO_URI:
-    process.env.MONGO_URI || "mongodb://localhost:27017/forti_dashboard",
+  MONGO_URI: process.env.MONGO_URI,
 
   // Auth
   JWT_SECRET: process.env.JWT_SECRET,
