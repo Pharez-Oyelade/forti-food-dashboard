@@ -1,4 +1,5 @@
 import { Activity } from '../models/Activity.js';
+import { Contact } from '../models/Contact.js';
 import { ACCESS_LEVELS } from '../../../shared/constants.js';
 import { ownerFilter as makeOwnerFilter } from '../middleware/ownerFilter.js';
 
@@ -25,9 +26,16 @@ export const listActivities = async (req, res, next) => {
   } catch (err) { next(err); }
 };
 
+
+
 export const createActivity = async (req, res, next) => {
   try {
     const activity = await Activity.create({ ...req.body, logged_by: req.user._id });
+    
+    if (req.body.contact && req.body.new_contact_stage) {
+      await Contact.findByIdAndUpdate(req.body.contact, { contact_stage: req.body.new_contact_stage });
+    }
+    
     res.status(201).json({ success: true, data: activity });
   } catch (err) { next(err); }
 };
@@ -36,6 +44,11 @@ export const updateActivity = async (req, res, next) => {
   try {
     const activity = await Activity.findOneAndUpdate({ _id: req.params.id, ...(req.rbacFilter || {}) }, req.body, { new: true });
     if (!activity) return res.status(404).json({ success: false, message: 'Activity not found or access denied' });
+    
+    if (req.body.contact && req.body.new_contact_stage) {
+      await Contact.findByIdAndUpdate(req.body.contact, { contact_stage: req.body.new_contact_stage });
+    }
+
     res.json({ success: true, data: activity });
   } catch (err) { next(err); }
 };
