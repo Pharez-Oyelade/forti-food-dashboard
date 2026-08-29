@@ -172,3 +172,21 @@ export function canDelete(level) {
 export function isRestricted(level) {
   return level === ACCESS_LEVELS.VIEW_RESTRICTED;
 }
+
+// ── CRM Contact Stages ──
+export const CONTACT_STAGES = {
+  NEW: 'New',
+  CONTACTED: 'Contacted',
+  MEETING_SET: 'Meeting Set',
+  QUALIFIED: 'Qualified',
+  UNQUALIFIED: 'Unqualified',
+};
+
+// ── Customer Sources ──
+export const CUSTOMER_SOURCES = {
+  INBOUND: 'Inbound',
+  OUTBOUND: 'Outbound',
+  REFERRAL: 'Referral',
+  EVENT: 'Event',
+  OTHER: 'Other',
+};

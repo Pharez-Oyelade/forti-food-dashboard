@@ -12,6 +12,7 @@ const activitySchema = new mongoose.Schema(
     notes: { type: String },
     deal: { type: mongoose.Schema.Types.ObjectId, ref: 'Deal' },
     grant: { type: mongoose.Schema.Types.ObjectId, ref: 'Grant' },
+    contact: { type: mongoose.Schema.Types.ObjectId, ref: 'Contact' },
     contact_name: { type: String },
     contact_company: { type: String },
     outcome: {
