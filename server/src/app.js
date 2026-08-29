@@ -86,8 +86,7 @@ async function start() {
     console.log(`\nForti Dashboard API running on port ${env.PORT}`);
     console.log(`Environment: ${env.NODE_ENV}`);
     console.log(`CORS origin: ${env.CORS_ORIGIN}\n`);
-    console.log(`[NOTE] Cron jobs are handled natively by Vercel via /api/v1/cron endpoints.`);
-    
+
     // Fallback: Run node-cron locally if not in Vercel
     if (!process.env.VERCEL) {
       import("./cron-runner.js").then(({ initLocalCrons }) => initLocalCrons());
