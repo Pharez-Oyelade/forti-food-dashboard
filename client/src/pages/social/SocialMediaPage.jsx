@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { get, post, put, del } from "@/services/api";
-import { Card, Button, LoadingSpinner } from "@/components/common";
-import { Plus, Edit2, Trash2, TrendingUp, TrendingDown } from "lucide-react";
+import { Card, Button, LoadingSpinner, ImportWizard } from "@/components/common";
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 import { SECTIONS } from "../../../../shared/constants";
 
@@ -14,6 +14,7 @@ export default function SocialMediaPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const [editingMetric, setEditingMetric] = useState(null);
   const [formData, setFormData] = useState({
     week_ending: "",
@@ -133,12 +134,25 @@ export default function SocialMediaPage() {
         </div>
         <div className="flex flex-wrap gap-3">
           {canWrite(SECTIONS.SOCIAL) && (
-            <Button variant="primary" icon={Plus} onClick={() => handleOpenModal()}>
-              Log Metrics
-            </Button>
+            <>
+              <Button variant="secondary" icon={Upload} onClick={() => setIsImportWizardOpen(true)}>
+                Import Metrics
+              </Button>
+              <Button variant="primary" icon={Plus} onClick={() => handleOpenModal()}>
+                Log Metrics
+              </Button>
+            </>
           )}
         </div>
       </div>
+
+      <ImportWizard
+        isOpen={isImportWizardOpen}
+        onClose={() => setIsImportWizardOpen(false)}
+        importType="SOCIAL"
+        title="Import Social Metrics"
+        onImportSuccess={fetchMetrics}
+      />
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

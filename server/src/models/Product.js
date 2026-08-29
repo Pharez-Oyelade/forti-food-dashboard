@@ -3,8 +3,8 @@ import { INVENTORY_STATUS } from '../../../shared/constants.js';
 
 const productSchema = new mongoose.Schema(
   {
-    product_name: { type: String, required: true },
-    sku: { type: String, required: true, unique: true },
+    product_name: { type: String, required: true, unique: true },
+    sku: { type: String },
     unit_cost: { type: Number, default: 0 },
     landed_cost_per_unit: { type: Number, default: 0 },
     unit_price: { type: Number, default: 0 },
@@ -67,11 +67,13 @@ productSchema.virtual('weeks_of_cover').get(function () {
 // Pre-validate hook for pricing rules
 productSchema.pre('validate', function (next) {
   if (this.isModified('unit_price') || this.isModified('meal_type') || this.isNew) {
-    if (this.meal_type === 'Single-SKU' && this.unit_price < 2800) {
-      this.invalidate('unit_price', 'Single-SKU meals must have a minimum price of ₦2,800.');
-    }
-    if (this.meal_type === 'Two-Component' && this.unit_price < 5600) {
-      this.invalidate('unit_price', 'Two-Component meals must have a minimum price of ₦5,600.');
+    if (this.unit_price > 0) {
+      if (this.meal_type === 'Single-SKU' && this.unit_price < 2800) {
+        this.invalidate('unit_price', 'Single-SKU meals must have a minimum price of ₦2,800.');
+      }
+      if (this.meal_type === 'Two-Component' && this.unit_price < 5600) {
+        this.invalidate('unit_price', 'Two-Component meals must have a minimum price of ₦5,600.');
+      }
     }
   }
   next();

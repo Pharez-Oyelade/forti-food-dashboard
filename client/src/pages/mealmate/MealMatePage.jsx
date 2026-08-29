@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { get, post, put, del } from "@/services/api";
-import { Card, Button, StatusBadge, LoadingSpinner } from "@/components/common";
+import { Card, Button, StatusBadge, LoadingSpinner, ImportWizard } from "@/components/common";
 import { SECTIONS } from "../../../../shared/constants";
-import { Plus, Edit2, Trash2, Heart, RefreshCw, Settings2 } from "lucide-react";
+import { Plus, Edit2, Trash2, Heart, RefreshCw, Settings2, Upload } from "lucide-react";
 import { toast } from "react-toastify";
 
 export default function MealMatePage() {
@@ -23,8 +23,8 @@ export default function MealMatePage() {
     localStorage.setItem("mealMateCurrency", displayCurrency);
   }, [displayCurrency]);
 
-  // Modal state
-  const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isImportWizardOpen, setIsImportWizardOpen] = useState(false);
   const [editingSchool, setEditingSchool] = useState(null);
   const [formData, setFormData] = useState({
     school_name: "",
@@ -147,18 +147,35 @@ export default function MealMatePage() {
           {/* <Heart className="text-brand-lime" />  */}
           My Meal Mate Framework
         </h1>
-        {canWrite(SECTIONS.MEALMATE) && activeTab === "Operations" && (
+        {canWrite(SECTIONS.MEALMATE) && (
           <div className="flex space-x-3">
             <Button
-              variant="primary"
-              icon={Plus}
-              onClick={() => handleOpenModal()}
+              variant="secondary"
+              icon={Upload}
+              onClick={() => setIsImportWizardOpen(true)}
             >
-              Add School
+              Import {activeTab === "Operations" ? "Schools" : "Subscribers"}
             </Button>
+            {activeTab === "Operations" && (
+              <Button
+                variant="primary"
+                icon={Plus}
+                onClick={() => handleOpenModal()}
+              >
+                Add School
+              </Button>
+            )}
           </div>
         )}
       </div>
+
+      <ImportWizard
+        isOpen={isImportWizardOpen}
+        onClose={() => setIsImportWizardOpen(false)}
+        importType={activeTab === "Operations" ? "SCHOOLS" : "SUBSCRIBERS"}
+        title={activeTab === "Operations" ? "Import Schools" : "Import Subscribers"}
+        onImportSuccess={fetchSchools}
+      />
 
       {/* Tabs */}
       <div className="flex space-x-4 border-b border-slate-700">
