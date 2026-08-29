@@ -123,4 +123,84 @@ router.get("/summary", async (req, res, next) => {
   }
 });
 
+// Historical Timeline Data
+router.get("/timeline", async (req, res, next) => {
+  try {
+    const { WeeklySnapshot } = await import("../models/WeeklySnapshot.js");
+
+    const snapshots = await WeeklySnapshot.find({}).sort("week_ending").lean();
+
+    // Build weekly array (raw snapshots, formatted for charts)
+    const weekly = snapshots.map((s) => ({
+      date: s.week_ending,
+      label: new Date(s.week_ending).toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+      }),
+      pipeline_value: s.pipeline?.weighted_value || 0,
+      total_deals: s.pipeline?.total_deals || 0,
+      stock_value: s.inventory?.total_stock_value || 0,
+      expiry_risks: s.inventory?.expiry_risks || 0,
+      meals_delivered: s.programs?.meals_delivered || 0,
+      active_schools: s.programs?.active_schools || 0,
+      engagement_rate: s.social?.engagement_rate || 0,
+      open_gaps: s.gaps?.open_count || 0,
+    }));
+
+    // Build monthly array (group by year-month, take the last week of each month)
+    const monthMap = new Map();
+    for (const s of snapshots) {
+      const d = new Date(s.week_ending);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+      monthMap.set(key, s); // last entry per month wins (sorted ascending)
+    }
+
+    const monthly = Array.from(monthMap.entries()).map(([key, s]) => ({
+      date: s.week_ending,
+      label: new Date(s.week_ending).toLocaleDateString("en-GB", {
+        month: "short",
+        year: "numeric",
+      }),
+      pipeline_value: s.pipeline?.weighted_value || 0,
+      total_deals: s.pipeline?.total_deals || 0,
+      stock_value: s.inventory?.total_stock_value || 0,
+      expiry_risks: s.inventory?.expiry_risks || 0,
+      meals_delivered: s.programs?.meals_delivered || 0,
+      active_schools: s.programs?.active_schools || 0,
+      engagement_rate: s.social?.engagement_rate || 0,
+      open_gaps: s.gaps?.open_count || 0,
+    }));
+
+    res.json({
+      success: true,
+      data: { weekly, monthly },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Manual Snapshot Trigger (Admin only)
+router.post("/snapshot", async (req, res, next) => {
+  try {
+    // Only allow users with user_mgmt edit access (admins)
+    const role = req.user?.role;
+    const adminAccess = role?.permissions?.user_mgmt?.access;
+    if (!adminAccess || adminAccess === "none" || adminAccess === "view" || adminAccess === "view_own" || adminAccess === "view_restricted") {
+      return res.status(403).json({ success: false, message: "Only admins can trigger snapshots." });
+    }
+
+    const { generateWeeklySnapshot } = await import("../services/snapshot.service.js");
+    const snapshot = await generateWeeklySnapshot();
+
+    if (!snapshot) {
+      return res.status(500).json({ success: false, message: "Snapshot generation failed." });
+    }
+
+    res.status(201).json({ success: true, data: snapshot });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

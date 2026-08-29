@@ -1,14 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import {
-  Package,
-  TrendingUp,
-  UtensilsCrossed,
-  Instagram,
-  AlertTriangle,
-  Users,
-} from "lucide-react";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { EmptyState } from "@/components/common";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AppLayout from "@/components/layout/AppLayout";
@@ -27,17 +18,6 @@ import SocialMediaPage from "@/pages/social/SocialMediaPage";
 import InsightsPage from "@/pages/insights/InsightsPage";
 import UserManagementPage from "@/pages/admin/UserManagementPage";
 import { SECTIONS, ACCESS_LEVELS } from "../../shared/constants.js";
-
-/* ── Placeholder pages for future phases ── */
-function PlaceholderPage({ icon, title, phase }) {
-  return (
-    <EmptyState
-      icon={icon}
-      title={title}
-      description={`Building this module in ${phase}.`}
-    />
-  );
-}
 
 /* ── Root redirect based on auth ── */
 function RootRedirect() {

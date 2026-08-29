@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "crons": [
+    {
+      "path": "/api/v1/cron/automations",
+      "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/v1/cron/snapshot",
+      "schedule": "0 2 * * 5"
+    }
+  ]
+}

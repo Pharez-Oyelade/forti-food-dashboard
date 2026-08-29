@@ -7,7 +7,6 @@ import cookieParser from "cookie-parser";
 
 import path from "path";
 import { fileURLToPath } from "url";
-import cron from "node-cron";
 import { runAllAutomations } from "./services/automation.service.js";
 import { generateWeeklySnapshot } from "./services/snapshot.service.js";
 import env from "./config/env.js";
@@ -32,6 +31,7 @@ import gapRoutes from "./routes/gap.routes.js";
 import dashboardRoutes from "./routes/dashboard.routes.js";
 import mealmateRoutes from "./routes/mealmate.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
+import cronRoutes from "./routes/cron.routes.js";
 
 // ── Initialise Express ──
 const app = express();
@@ -73,6 +73,7 @@ app.use("/api/v1/gaps", gapRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/mealmate", mealmateRoutes);
 app.use("/api/v1/settings", settingsRoutes);
+app.use("/api/v1/cron", cronRoutes);
 
 // ── Global Error Handler ──
 app.use(errorHandler);
@@ -83,21 +84,9 @@ async function start() {
 
   app.listen(env.PORT, () => {
     console.log(`\nForti Dashboard API running on port ${env.PORT}`);
-    
-    // Schedule Automation Engine to run daily at midnight
-    cron.schedule("0 0 * * *", () => {
-      console.log("Running scheduled nightly automation tasks...");
-      runAllAutomations();
-    });
-
-    // Schedule Weekly Snapshot early Friday (2 AM)
-    cron.schedule("0 2 * * 5", () => {
-      console.log("Running weekly snapshot...");
-      generateWeeklySnapshot();
-    });
-
     console.log(`Environment: ${env.NODE_ENV}`);
     console.log(`CORS origin: ${env.CORS_ORIGIN}\n`);
+    console.log(`[NOTE] Cron jobs are handled natively by Vercel via /api/v1/cron endpoints.`);
   });
 }
 

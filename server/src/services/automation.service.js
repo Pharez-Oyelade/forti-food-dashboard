@@ -36,10 +36,11 @@ export const runInventoryPass = async () => {
   
   const products = await Product.find({});
   let riskCount = 0;
+  let resolveCount = 0;
 
   for (const product of products) {
     const unitsOnHand = product.units_on_hand || 0;
-    const soldPerWeek = product.sold_per_week || 0.1; // avoid division by zero
+    const soldPerWeek = product.sold_per_week || 0.1;
     
     let isAtRisk = false;
     let isExpired = false;
@@ -55,7 +56,6 @@ export const runInventoryPass = async () => {
           const weeksUntilExpiry = (expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24 * 7);
           const weeksOfCover = unitsOnHand / soldPerWeek;
           
-          // If it will take longer to sell the inventory than the time left before expiry
           if (weeksOfCover > weeksUntilExpiry) {
             isAtRisk = true;
           }
@@ -73,28 +73,47 @@ export const runInventoryPass = async () => {
     if (newStatus !== product.status) {
       product.status = newStatus;
       await product.save();
+    }
       
-      // Auto-log a Business Gap if a high-value item becomes AT_RISK or EXPIRED
-      if (isAtRisk || isExpired) {
-        const totalValue = unitsOnHand * product.unit_cost;
-        if (totalValue > 50000) { // Threshold: 50k Naira
-          riskCount++;
-          await BusinessGap.create({
-            title: `Inventory Risk: ${product.sku}`,
-            description: `Automated alert. ${product.sku} is marked ${newStatus}. Total Value at Risk: ₦${totalValue.toLocaleString()}. Weeks of cover exceeds time to expiry.`,
-            severity: isExpired ? "HIGH" : "MEDIUM",
-            status: "OPEN",
-            department_tags: ["Inventory"],
-            owner: "Inventory Manager",
-            created_by: systemUserId,
-            is_automated: true
-          });
-        }
+    // Handle Business Gap creation/resolution
+    const gapTitle = `Inventory Risk: ${product.sku}`;
+    const totalValue = unitsOnHand * product.unit_cost;
+    const meetsThreshold = (isAtRisk || isExpired) && totalValue > 50000;
+    
+    const existingGap = await BusinessGap.findOne({
+      title: gapTitle,
+      status: "OPEN",
+      is_automated: true
+    });
+
+    if (meetsThreshold) {
+      if (!existingGap) {
+        riskCount++;
+        await BusinessGap.create({
+          title: gapTitle,
+          description: `Automated alert. ${product.sku} is marked ${newStatus}. Total Value at Risk: ₦${totalValue.toLocaleString()}. Weeks of cover exceeds time to expiry.`,
+          severity: isExpired ? "HIGH" : "MEDIUM",
+          status: "OPEN",
+          department_tags: ["Inventory"],
+          owner: "Inventory Manager",
+          created_by: systemUserId,
+          is_automated: true
+        });
+      } else {
+        // Update description with latest value
+        existingGap.description = `Automated alert. ${product.sku} is marked ${newStatus}. Total Value at Risk: ₦${totalValue.toLocaleString()}. Weeks of cover exceeds time to expiry.`;
+        existingGap.severity = isExpired ? "HIGH" : "MEDIUM";
+        await existingGap.save();
       }
+    } else if (existingGap) {
+      // It's no longer at risk, resolve the gap!
+      existingGap.status = "RESOLVED";
+      await existingGap.save();
+      resolveCount++;
     }
   }
   
-  console.log(`[Automation Engine] Inventory Pass Complete. Logged ${riskCount} new gaps.`);
+  console.log(`[Automation Engine] Inventory Pass Complete. Logged ${riskCount} new gaps, resolved ${resolveCount}.`);
 };
 
 // 2. Social Media Performance Pass
@@ -111,17 +130,23 @@ export const runSocialPass = async () => {
     if (previous > 0) {
       const dropPct = ((previous - latest) / previous) * 100;
       if (dropPct >= 10) {
-        await BusinessGap.create({
-          title: "Social Engagement Drop",
-          description: `Automated alert. Instagram engagement dropped by ${dropPct.toFixed(1)}% this week (from ${previous}% to ${latest}%).`,
-          severity: "MEDIUM",
-          status: "OPEN",
-          department_tags: ["Marketing"],
-          owner: "Marketing Lead",
-          created_by: systemUserId,
-          is_automated: true
-        });
-        console.log("[Automation Engine] Logged Social Gap.");
+        // Prevent duplicate for the same week's drop
+        const title = `Social Engagement Drop (${metrics[0].week_ending.toISOString().split('T')[0]})`;
+        const existingGap = await BusinessGap.findOne({ title });
+        
+        if (!existingGap) {
+          await BusinessGap.create({
+            title,
+            description: `Automated alert. Instagram engagement dropped by ${dropPct.toFixed(1)}% this week (from ${previous}% to ${latest}%).`,
+            severity: "MEDIUM",
+            status: "OPEN",
+            department_tags: ["Marketing"],
+            owner: "Marketing Lead",
+            created_by: systemUserId,
+            is_automated: true
+          });
+          console.log("[Automation Engine] Logged Social Gap.");
+        }
       }
     }
   }
@@ -132,23 +157,18 @@ export const runPipelinePass = async () => {
   console.log("[Automation Engine] Running Pipeline Pass...");
   const systemUserId = await getSystemUserId();
   
-  const currentMonthStart = new Date();
-  currentMonthStart.setDate(1);
-  currentMonthStart.setHours(0,0,0,0);
-  
   const commitDealsCount = await Deal.countDocuments({
     deal_stage: { $nin: [DEAL_STAGES.CLOSED_WON, DEAL_STAGES.CLOSED_LOST, DEAL_STAGES.CANCELLED] },
     forecast_category: FORECAST_CATEGORIES.COMMIT
   });
   
-  // If there are 0 commit deals in the open pipeline
+  const existingGap = await BusinessGap.findOne({ 
+    title: "Critically Low Pipeline Commit",
+    status: "OPEN",
+    is_automated: true
+  });
+
   if (commitDealsCount === 0) {
-    // Prevent duplicate gaps if one is already open for this
-    const existingGap = await BusinessGap.findOne({ 
-      title: "Critically Low Pipeline Commit",
-      status: { $ne: "RESOLVED" }
-    });
-    
     if (!existingGap) {
       await BusinessGap.create({
         title: "Critically Low Pipeline Commit",
@@ -162,6 +182,11 @@ export const runPipelinePass = async () => {
       });
       console.log("[Automation Engine] Logged Pipeline Gap.");
     }
+  } else if (existingGap) {
+    // We have commit deals now, resolve it!
+    existingGap.status = "RESOLVED";
+    await existingGap.save();
+    console.log("[Automation Engine] Resolved Pipeline Gap.");
   }
 };
 
